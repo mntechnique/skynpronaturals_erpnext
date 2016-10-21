@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include skynpronaturals_erpnext *.css
+recursive-include skynpronaturals_erpnext *.csv
+recursive-include skynpronaturals_erpnext *.html
+recursive-include skynpronaturals_erpnext *.ico
+recursive-include skynpronaturals_erpnext *.js
+recursive-include skynpronaturals_erpnext *.json
+recursive-include skynpronaturals_erpnext *.md
+recursive-include skynpronaturals_erpnext *.png
+recursive-include skynpronaturals_erpnext *.py
+recursive-include skynpronaturals_erpnext *.svg
+recursive-include skynpronaturals_erpnext *.txt
+recursive-exclude skynpronaturals_erpnext *.pyc
