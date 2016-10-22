@@ -111,3 +111,6 @@ app_license = "GPL v3"
 # 	"frappe.desk.doctype.event.event.get_events": "skynpronaturals_erpnext.event.get_events"
 # }
 
+fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn_warehouse']]]},
+             "Custom Field",
+             {"dt": "Property Setter", "filters":[["name", "in", []]]}]
