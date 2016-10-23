@@ -112,6 +112,6 @@ app_license = "GPL v3"
 # }
 
 fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn_warehouse']]]},
-             {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client']]]}
+             {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client',]]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock"]]]},"Property Setter"]
 
