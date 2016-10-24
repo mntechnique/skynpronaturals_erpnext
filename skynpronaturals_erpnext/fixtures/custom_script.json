@@ -1,1 +1,11 @@
-[]
+[
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Sales Invoice", 
+  "modified": "2016-10-24 12:12:01.364651", 
+  "name": "Sales Invoice-Client", 
+  "script": "frappe.ui.form.on(\"Sales Invoice\", \"refresh\", function(frm) {\n\titems = frm.doc.items;\n\tfor (var i=0; i <= items.length - 1; i++) {\n\t\titems[i].warehouse = cur_frm.doc.spn_warehouse;\n\t}\n});\n", 
+  "script_type": "Client"
+ }
+]
