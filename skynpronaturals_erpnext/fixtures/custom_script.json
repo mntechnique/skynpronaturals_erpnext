@@ -3,9 +3,9 @@
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Sales Invoice", 
-  "modified": "2016-10-24 12:12:01.364651", 
+  "modified": "2016-10-24 15:40:32.903324", 
   "name": "Sales Invoice-Client", 
-  "script": "frappe.ui.form.on(\"Sales Invoice\", \"refresh\", function(frm) {\n\titems = frm.doc.items;\n\tfor (var i=0; i <= items.length - 1; i++) {\n\t\titems[i].warehouse = cur_frm.doc.spn_warehouse;\n\t}\n});\n", 
+  "script": "frappe.ui.form.on(\"Sales Invoice\", \"spn_warehouse\", function(frm) {\n    items = frm.doc.items;\n    for (var i=0; i <= items.length - 1; i++) {\n        items[i].warehouse = cur_frm.doc.spn_warehouse;\n    }\n});\n\nfrappe.ui.form.on(\"Sales Invoice\", \"spn_warehouse\", function(frm) {\nif(frm.doc.spn_warehouse && frm.doc.territory && frm.doc.customer_group) {\n    frappe.call({\n        method: \"skynpronaturals_erpnext.api.get_naming_series\",\n        args: { \n         \"spn_warehouse\": frm.doc.spn_warehouse,\n         \"cust_ter\": frm.doc.territory,\n         \"cust_group\": frm.doc.customer_group\n        },\n        callback: function(r){\n            frappe.msgprint(r);\n            //cur_frm.set_value(\"naming_series\", r.message);\n        }\n    });\n}\n});", 
   "script_type": "Client"
  }
 ]

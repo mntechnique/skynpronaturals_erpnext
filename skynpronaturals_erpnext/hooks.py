@@ -78,6 +78,12 @@ app_license = "GPL v3"
 #	}
 # }
 
+doc_events = {
+    "Sales Invoice": {
+        "validate": "skynpronaturals_erpnext.api.validate_sales_invoice"
+    }
+}
+
 # Scheduled Tasks
 # ---------------
 
