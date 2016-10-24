@@ -10,19 +10,20 @@ def validate_sales_invoice(self, method):
 
 @frappe.whitelist()
 def get_naming_series(spn_warehouse, cust_ter, cust_group):
-    # if spn_warehouse == "Assam":
-    #     if cust_group=="Assam Registered Distributor" and cust_ter == "Assam":
-    #         return "GV-.#####"
-    #     elif cust_group=="Assam Unregistered Distributor":
-    #         return "GU-.#####"
-    #     else:
-    #         return "GC-.#####"
-    # elif spn_warehouse == "Maharastra":
-    #     if cust_group=="Maharashtra Registered Distributor" and cust_ter == "Mharashtra":
-    #         return "BV-.#####"
-    #     elif cust_group=="Maharashtra Unregistered Distributor":
-    #         return "BU-.#####"
-    #     else:
-    #         return "BC-.#####"
+    if spn_warehouse == "Bellezimo Professionale Products Pvt. Ltd. C/o. Kotecha Clearing & Forwarding Pvt. Ltd.  - SPN":
+        if cust_group=="Assam Registered Distributor" and cust_ter == "Assam":
+            return "GV-.#####"
+        elif cust_group=="Assam Unregistered Distributor":
+            return "GU-.#####"
+        else:
+            return "GC-.#####"
+    elif spn_warehouse == "Maharastra":
+        if cust_group=="Maharashtra Registered Distributor" and cust_ter == "Mharashtra":
+            return "BV-.#####"
+        elif cust_group=="Maharashtra Unregistered Distributor":
+            return "BU-.#####"
+        else:
+            return "BC-.#####"
 
-    return "BC-.#####"
+
+
