@@ -117,7 +117,7 @@ doc_events = {
 # 	"frappe.desk.doctype.event.event.get_events": "skynpronaturals_erpnext.event.get_events"
 # }
 
-fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn_warehouse']]]},
+fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn_warehouse', 'Customer-spn_tin_no', 'Customer-spn_cst_no']]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client',]]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock"]]]},
              {"dt": "Print Format", "filters": [["name", "in", ["SPN Sales Invoice"]]]}]
