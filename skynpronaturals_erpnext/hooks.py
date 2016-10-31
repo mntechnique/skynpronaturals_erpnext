@@ -119,5 +119,6 @@ doc_events = {
 
 fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn_warehouse']]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client',]]]},
-             {"dt": "Property Setter", "filters": [["name", "in",["update_stock"]]]},"Property Setter"]
+             {"dt": "Property Setter", "filters": [["name", "in",["update_stock"]]]},
+             {"dt": "Print Format", "filters": [["name", "in", ["SPN Sales Invoice"]]]}]
 
