@@ -15,14 +15,14 @@ def get_naming_series(spn_warehouse, cust_ter, cust_group):
 
     warehouse_state = frappe.db.get_value("Warehouse", spn_warehouse, "state")
 
-    if warehouse_state == "Assam":
+    if warehouse_state.lower() == "assam":
         if cust_group=="Assam Registered Distributor" and cust_ter == "Assam":
             return "GV-.#####"
         elif cust_group=="Assam Unregistered Distributor":
             return "GU-.#####"
         else:
             return "GC-.#####"
-    elif warehouse_state == "Maharashtra":
+    elif warehouse_state.lower() == "maharashtra":
         if cust_group=="Maharashtra Registered Distributor" and cust_ter == "Maharashtra":
             return "BV-.#####"
         elif cust_group=="Maharashtra Unregistered Distributor":
