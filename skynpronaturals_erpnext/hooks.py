@@ -125,7 +125,7 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
 															'Sales Invoice-spn_road_permit_no', 'Sales Invoice-cb_payload_info',
                                                             'Warehouse-spn_letterhead',
                                                             'Sales Invoice-sb_transport_and_payload_information']]]},
-             {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client',]]]},
+             {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client']]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock"]]]},
              {"dt": "Print Format", "filters": [["name", "in", ["SPN Sales Invoice"]]]}]
 
