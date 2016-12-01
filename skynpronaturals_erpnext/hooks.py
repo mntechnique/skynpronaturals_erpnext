@@ -124,8 +124,13 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
 															'Sales Invoice-spn_no_of_cases', 'Sales Invoice-spn_consignment_weight',
 															'Sales Invoice-spn_road_permit_no', 'Sales Invoice-cb_payload_info',
                                                             'Warehouse-spn_letterhead',
-                                                            'Sales Invoice-sb_transport_and_payload_information']]]},
+                                                            'Sales Invoice-sb_transport_and_payload_information',
+                                                            'Purchase Receipt-pr_carrier','Purchase Receipt-pr_mode_of_transport',
+                                                            'Purchase Receipt-pr_lr_no','Purchase Receipt-pr_lr_date',
+                                                            'Purchase Receipt-pr_no_of_cases','Purchase Receipt-pr_gross_weight',
+                                                            'Purchase Receipt-pr_road_permit_no',
+                                                            'Purchase Receipt-spn_warehouse']]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client']]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock"]]]},
-             {"dt": "Print Format", "filters": [["name", "in", ["SPN Sales Invoice","Memo Invoice"]]]}]
+             {"dt": "Print Format", "filters": [["name", "in", ["SPN Sales Invoice","Memo Invoice","Goods Receipt Note"]]]}]
 
