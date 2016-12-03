@@ -132,5 +132,6 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             'Purchase Receipt-spn_warehouse']]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client','Purchase Receipt-Client']]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock"]]]},
+              {"dt": "Letter Head", "filters": [["name", "in",["(Maharashtra) Bellezimo Professionale Products Private Limited","(Assam) Bellezimo Professionale Products Private Limited"]]]},
              {"dt": "Print Format", "filters": [["name", "in", ["SPN Sales Invoice","Memo Invoice","Goods Receipt Note"]]]}]
 
