@@ -16,5 +16,14 @@
   "name": "Purchase Receipt-Client", 
   "script": "frappe.ui.form.on(\"Purchase Receipt\", \"spn_warehouse\", function(frm) {\n    if(frm.doc.spn_warehouse) {\n        items = frm.doc.items;\n        for (var i=0; i <= items.length - 1; i++) {\n            items[i].warehouse = cur_frm.doc.spn_warehouse;\n        }\n        \n        //Fetch and set letterhead\n        frappe.call({\n            method: \"skynpronaturals_erpnext.api.get_spn_letter_head\",\n            args: {spn_warehouse: frm.doc.spn_warehouse }, \n            callback: function(r) {\n                if (!r.exc) {\n                    cur_frm.set_value(\"letter_head\", r.message);\n                } else {\n                    frappe.msgprint(\"Check letterhead field in selected Warehouse.\")\n                }\n            }\n        });\n       }\n});", 
   "script_type": "Client"
+ }, 
+ {
+  "docstatus": 0, 
+  "doctype": "Custom Script", 
+  "dt": "Stock Entry", 
+  "modified": "2016-12-10 16:20:57.795840", 
+  "name": "Stock Entry-Client", 
+  "script": "frappe.ui.form.on(\"Stock Entry\", \"spn_to_warehouse\", function(frm) {\n    if(frm.doc.spn_to_warehouse) {\n        items = frm.doc.items;\n        for (var i=0; i <= items.length - 1; i++) {\n            items[i].spn_t_warehouse = cur_frm.doc.spn_to_warehouse;\n        }\n       }\n\t\n});\n\nfrappe.ui.form.on(\"Stock Entry\", \"spn_stock_entry_type\", function(frm) {\n\tif(frm.doc.purpose == \"Material Transfer\" && frm.doc.spn_stock_entry_type == \"Skynpro\"){\n\t\tfrappe.model.get_value(\"SPN Settings\", \n\t\t\t\"SPN Settings\", \"spn_transit_warehouse\", function(r){\t\t\t\t\t     \n  \t\t\t\tcur_frm.set_value(\"to_warehouse\",r.spn_transit_warehouse)\t\n\t\t\t});\n\t\tfrm.set_df_property(\"purpose\", \"read_only\",1);\n\t\tfrm.set_df_property(\"to_warehouse\", \"read_only\",1);\t\t\n\t} else {\n\t\tfrm.set_df_property(\"purpose\", \"read_only\",0);\n\t\tfrm.set_df_property(\"to_warehouse\", \"read_only\",0);\t\t\n\t\tcur_frm.set_value(\"to_warehouse\",\" \")\n\t}\n\n});", 
+  "script_type": "Client"
  }
 ]

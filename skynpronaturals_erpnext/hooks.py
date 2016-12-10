@@ -129,8 +129,10 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             'Purchase Receipt-pr_lr_no','Purchase Receipt-pr_lr_date',
                                                             'Purchase Receipt-pr_no_of_cases','Purchase Receipt-pr_gross_weight',
                                                             'Purchase Receipt-pr_road_permit_no',
-                                                            'Purchase Receipt-spn_warehouse']]]},
-             {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client','Purchase Receipt-Client']]]},
+                                                            'Purchase Receipt-spn_warehouse',
+                                                            'Stock Entry-spn_stock_entry_type','Stock_Entry-spn_to_warehouse',
+                                                            'Stock Entry Detail-spn_t_warehouse']]]},
+             {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client','Purchase Receipt-Client','Stock Entry-Client']]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock"]]]},
               {"dt": "Letter Head", "filters": [["name", "in",["(Maharashtra) Bellezimo Professionale Products Private Limited","(Assam) Bellezimo Professionale Products Private Limited"]]]},
              {"dt": "Print Format", "filters": [["name", "in", ["SPN Sales Invoice","Memo Invoice","Goods Receipt Note"]]]}]
