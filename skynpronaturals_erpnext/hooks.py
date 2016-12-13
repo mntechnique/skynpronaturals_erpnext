@@ -130,7 +130,7 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             'Purchase Receipt-pr_no_of_cases','Purchase Receipt-pr_gross_weight',
                                                             'Purchase Receipt-pr_road_permit_no',
                                                             'Purchase Receipt-spn_warehouse',
-                                                            'Stock Entry-spn_stock_entry_type','Stock_Entry-spn_to_warehouse',
+                                                            'Stock Entry-spn_stock_entry_type','Stock Entry-spn_to_warehouse',
                                                             'Stock Entry Detail-spn_t_warehouse',
                                                             'Stock Entry-st_carrier','Stock Entry-st_mode_of_transport',
                                                             'Stock Entry-st_lr_no','Stock Entry-st_lr_date',
