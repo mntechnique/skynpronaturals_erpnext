@@ -135,8 +135,9 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             'Stock Entry-st_carrier','Stock Entry-st_mode_of_transport',
                                                             'Stock Entry-st_lr_no','Stock Entry-st_lr_date',
                                                             'Stock Entry-st_no_of_cases','Stock Entry-st_gross_weight',
-                                                            'Stock Entry-st_road_permit_no', 'Stock Entry Detail-standard_rate'
-                                                            ]]]},
+                                                            'Stock Entry-st_road_permit_no', 'Stock Entry Detail-standard_rate',
+                                                            'Stock Entry-transport_and_payload_information', 
+                                                            'Stock Entry-cb_transport_payload_info_1']]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client','Purchase Receipt-Client','Stock Entry-Client']]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock"]]]},
               {"dt": "Letter Head", "filters": [["name", "in",["(Maharashtra) Bellezimo Professionale Products Private Limited","(Assam) Bellezimo Professionale Products Private Limited"]]]},
