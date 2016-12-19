@@ -1,1 +1,19 @@
-[]
+[
+ {
+  "_assign": null, 
+  "_comments": null, 
+  "_liked_by": null, 
+  "_user_tags": null, 
+  "default_value": null, 
+  "doc_type": "Sales Invoice Item", 
+  "docstatus": 0, 
+  "doctype": "Property Setter", 
+  "doctype_or_field": "DocField", 
+  "field_name": "rate", 
+  "modified": "2016-12-19 20:32:50.102185", 
+  "name": "Sales Invoice Item-rate-read_only", 
+  "property": "read_only", 
+  "property_type": "Check", 
+  "value": "1"
+ }
+]
