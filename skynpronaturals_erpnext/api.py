@@ -65,3 +65,9 @@ def get_spn_letter_head(spn_warehouse):
 
 
 
+@frappe.whitelist()
+def get_details_from_transit_entry(transit_entry_name):
+    #from frappe.model.mapper import get_mapped_doc
+    transit_entry = frappe.get_doc("Stock Entry", transit_entry_name)
+    return {"destination_warehouse": transit_entry.spn_to_warehouse, "items": transit_entry.items}
+    
