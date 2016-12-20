@@ -138,8 +138,6 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             'Stock Entry-st_road_permit_no', 'Stock Entry Detail-standard_rate',
                                                             'Stock Entry-transport_and_payload_information', 
                                                             'Stock Entry-cb_transport_payload_info_1', 
-                                                            'Stock Entry Detail-spn_sb_qty_lost', 'Stock Entry Detail-spn_qty_lost',
-                                                            'Stock Entry Detail-spn_cb_qty_lost_1', 'Stock Entry Detail-spn_loss_warehouse', 
                                                             'Stock Entry-spn_linked_transit_entity']]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client','Purchase Receipt-Client','Stock Entry-Client']]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock", "Sales Invoice Item-rate-read_only"]]]},
