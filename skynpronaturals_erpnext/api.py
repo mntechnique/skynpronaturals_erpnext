@@ -71,3 +71,17 @@ def get_details_from_transit_entry(transit_entry_name):
     transit_entry = frappe.get_doc("Stock Entry", transit_entry_name)
     return {"destination_warehouse": transit_entry.spn_to_warehouse, "items": transit_entry.items}
     
+@frappe.whitelist()
+def create_transit_loss_stock_entry(transit_entry_name):
+    # tle = frappe.new_doc("Stock Entry")
+
+    # orig_entry = frappe.get_doc("Stock Entry", transit_entry_name)
+
+    # tle.purpose = "Material Transfer"
+    # tle.posting_date = orig_entry.posting_date
+    # tle.posting_time = orig_entry.posting_time
+
+    
+    
+       
+
