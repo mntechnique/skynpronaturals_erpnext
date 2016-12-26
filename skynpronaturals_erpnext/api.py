@@ -68,11 +68,56 @@ def get_spn_letter_head(spn_warehouse):
 @frappe.whitelist()
 def get_details_from_transit_entry(transit_entry_name):
     #from frappe.model.mapper import get_mapped_doc
+    for x in xrange(1,10):
+        print transit_entry_name
+
     transit_entry = frappe.get_doc("Stock Entry", transit_entry_name)
     return {"destination_warehouse": transit_entry.spn_to_warehouse, "items": transit_entry.items}
-    
+
 @frappe.whitelist()
 def create_transit_loss_stock_entry(transit_entry_name):
+    pass
+
+
+def make_new_stock_entry(self, method):
+    wh_src = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_warehouse")
+    wh_loss = frappe.db.get_value("SPN Settings","SPN Settings","sb_transit_loss_warehouse")
+    if self.spn_linked_transit_entry and self.from_warehouse == wh_src and self.to_warehouse != wh_loss:
+        s = frappe.new_doc("Stock Entry")
+        #args = frappe._dict(self)
+
+
+        s.posting_date = self.posting_date
+
+        s.posting_time = self.posting_time
+
+        if not self.company:
+            if self.source:
+                self.company = frappe.db.get_value('Warehouse', self.from_warehouse, 'company')
+            elif self.target:
+                self.company = frappe.db.get_value('Warehouse', self.to_warehouse, 'company')
+
+        s.purpose = "Material Transfer"
+        s.spn_linked_transit_entry = self.name
+
+        s.company = self.company or erpnext.get_default_company()
+        for item in self.items:
+            s.append("items", {
+                "item_code": item.item_code,
+                "s_warehouse": wh_src,
+                "t_warehouse": wh_loss,
+                "qty": item.spn_qty_lost,
+                "basic_rate": item.basic_rate,
+                "conversion_factor": 1.0,
+                "serial_no": item.serial_no,
+                'cost_center': item.cost_center,
+                'expense_account': item.expense_account
+            })
+
+        s.save()
+        s.submit()
+        frappe.db.commit()
+
     # tle = frappe.new_doc("Stock Entry")
 
     # orig_entry = frappe.get_doc("Stock Entry", transit_entry_name)
@@ -81,7 +126,7 @@ def create_transit_loss_stock_entry(transit_entry_name):
     # tle.posting_date = orig_entry.posting_date
     # tle.posting_time = orig_entry.posting_time
 
-    
-    
-       
+
+
+
 

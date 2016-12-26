@@ -80,7 +80,10 @@ app_license = "GPL v3"
 
 doc_events = {
     "Sales Invoice": {
-        "validate": "skynpronaturals_erpnext.api.validate_sales_invoice"
+        "validate": "skynpronaturals_erpnext.api.validate_sales_invoice",
+    },
+    "Stock Entry": {
+        "on_submit": "skynpronaturals_erpnext.api.make_new_stock_entry",
     }
 }
 
@@ -136,12 +139,12 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             'Stock Entry-st_lr_no','Stock Entry-st_lr_date',
                                                             'Stock Entry-st_no_of_cases','Stock Entry-st_gross_weight',
                                                             'Stock Entry-st_road_permit_no', 'Stock Entry Detail-standard_rate',
-                                                            'Stock Entry-transport_and_payload_information', 
-                                                            'Stock Entry-cb_transport_payload_info_1', 
-                                                            'Stock Entry-spn_linked_transit_entry', 
-                                                            'Stock Entry Detail-spn_sb_qty_lost', 
-                                                            'Stock Entry Detail-spn_qty_lost', 
-                                                            'Stock Entry Detail-spn_cb_qty_lost_1', 
+                                                            'Stock Entry-transport_and_payload_information',
+                                                            'Stock Entry-cb_transport_payload_info_1',
+                                                            'Stock Entry-spn_linked_transit_entry',
+                                                            'Stock Entry Detail-spn_sb_qty_lost',
+                                                            'Stock Entry Detail-spn_qty_lost',
+                                                            'Stock Entry Detail-spn_cb_qty_lost_1',
                                                             'Stock Entry Detail-spn_loss_warehouse']]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client','Purchase Receipt-Client','Stock Entry-Client']]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock", "Sales Invoice Item-rate-read_only"]]]},
