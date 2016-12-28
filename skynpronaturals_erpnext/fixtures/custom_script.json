@@ -12,9 +12,9 @@
   "docstatus": 0, 
   "doctype": "Custom Script", 
   "dt": "Purchase Receipt", 
-  "modified": "2016-12-01 16:49:38.375732", 
+  "modified": "2016-12-28 13:59:45.881950", 
   "name": "Purchase Receipt-Client", 
-  "script": "frappe.ui.form.on(\"Purchase Receipt\", \"spn_warehouse\", function(frm) {\n    if(frm.doc.spn_warehouse) {\n        items = frm.doc.items;\n        for (var i=0; i <= items.length - 1; i++) {\n            items[i].warehouse = cur_frm.doc.spn_warehouse;\n        }\n        \n        //Fetch and set letterhead\n        frappe.call({\n            method: \"skynpronaturals_erpnext.api.get_spn_letter_head\",\n            args: {spn_warehouse: frm.doc.spn_warehouse }, \n            callback: function(r) {\n                if (!r.exc) {\n                    cur_frm.set_value(\"letter_head\", r.message);\n                } else {\n                    frappe.msgprint(\"Check letterhead field in selected Warehouse.\")\n                }\n            }\n        });\n       }\n});", 
+  "script": "frappe.ui.form.on(\"Purchase Receipt Item\", \"item_code\", function(frm, cdt, cdn) {\n\tvar d = locals[cdt][cdn];\n\td[\"warehouse\"] = cur_frm.doc.spn_warehouse;\n});\n\nfrappe.ui.form.on(\"Purchase Receipt\", \"spn_warehouse\", function(frm) {\n    if(frm.doc.spn_warehouse) {\n        items = frm.doc.items;\n        for (var i=0; i <= items.length - 1; i++) {\n            items[i].warehouse = cur_frm.doc.spn_warehouse;\n        }\n        \n        //Fetch and set letterhead\n        frappe.call({\n            method: \"skynpronaturals_erpnext.api.get_spn_letter_head\",\n            args: {spn_warehouse: frm.doc.spn_warehouse }, \n            callback: function(r) {\n                if (!r.exc) {\n                    cur_frm.set_value(\"letter_head\", r.message);\n                } else {\n                    frappe.msgprint(\"Check letterhead field in selected Warehouse.\")\n                }\n            }\n        });\n       }\n});", 
   "script_type": "Client"
  }, 
  {
