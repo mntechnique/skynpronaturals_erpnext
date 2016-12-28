@@ -1,4 +1,7 @@
+from __future__ import unicode_literals
 import frappe, json
+import frappe
+from frappe import _
 
 @frappe.whitelist()
 def validate_sales_invoice(self, method):
@@ -9,6 +12,13 @@ def validate_sales_invoice(self, method):
 
     if not self.naming_series:
         self.naming_series = get_naming_series(spn_warehouse,cust_ter,cust_group)
+
+@frappe.whitelist()
+def validate_stock_entry(self, method):
+    if not self.spn_linked_transit_entry:
+        if self.from_warehouse == "Transit Warehouse - SPN":
+            frappe.throw(_("User can not create stock entry from Transit warehouse. Set Linked Transit Entry first then try! "))
+
 
 @frappe.whitelist()
 def get_naming_series(spn_warehouse, cust_ter, cust_group):
