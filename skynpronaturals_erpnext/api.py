@@ -16,8 +16,9 @@ def validate_sales_invoice(self, method):
 @frappe.whitelist()
 def validate_stock_entry(self, method):
     if not self.spn_linked_transit_entry:
-        if self.from_warehouse == "Transit Warehouse - SPN":
-            frappe.throw(_("User can not create stock entry from Transit warehouse. Set Linked Transit Entry first then try! "))
+        for d in self.get('items'):
+            if d.s_warehouse == "Transit Warehouse - SPN":
+                frappe.throw(_("User can not create stock entry from Transit warehouse. Set Linked Transit Entry first then try! "))
 
 
 @frappe.whitelist()
