@@ -15,10 +15,6 @@ def validate_sales_invoice(self, method):
 
 @frappe.whitelist()
 def validate_stock_entry(self, method):
-    # if not self.spn_linked_transit_entry:
-    #     # for d in self.get('items'):
-    #     #     if d.s_warehouse == "Transit Warehouse - SPN":
-    #     #         frappe.throw(_("User can not create stock entry from Transit warehouse. Set Linked Transit Entry first then try! "))
     if self.spn_linked_transit_entry:
         #linked_entry = frappe.get_doc("Stock Entry","spn_linked_transit_entry")
         for d in self.get('items'):
@@ -26,6 +22,14 @@ def validate_stock_entry(self, method):
             if linked_entry_item_qty < d.qty-(d.spn_rejected_qty + d.spn_qty_lost):
                  frappe.throw(_(" Item Qty should not exceed quantity in transit" ))
 
+
+@frappe.whitelist()
+def validate_purchase_receipt(self, method):
+        #linked_entry = frappe.get_doc("Stock Entry","spn_linked_transit_entry")
+        for d in self.get('items'):
+            # linked_entry_item_qty = frappe.db.get_value("Stock Entry Detail", filters={"parent": self.spn_linked_transit_entry, "item_code": d.item_code}, fieldname= "qty")
+            if d.rejected_qty != d.spn_rejected_qty + d.spn_transit_loss_qty:
+                 frappe.throw(_("Row #{0}: Item Qty should not exceed quantity in transit {1}").format(d.idx, d.item_code))
 
 
 @frappe.whitelist()

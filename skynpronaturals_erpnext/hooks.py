@@ -82,6 +82,9 @@ doc_events = {
     "Sales Invoice": {
         "validate": "skynpronaturals_erpnext.api.validate_sales_invoice",
     },
+     "Purchase Receipt": {
+        "validate": "skynpronaturals_erpnext.api.validate_purchase_receipt",
+    },
     "Stock Entry": {
         "on_submit": "skynpronaturals_erpnext.api.make_new_stock_entry",
         "validate": "skynpronaturals_erpnext.api.validate_stock_entry",
@@ -144,6 +147,8 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             'Stock Entry-cb_transport_payload_info_1',
                                                             'Stock Entry-spn_linked_transit_entry',
                                                             'Stock Entry Detail-spn_qty_lost',
+                                                            "Purchase Receipt Item-spn_rejected_qty",
+                                                            "Purchase Receipt Item-spn_transit_loss_qty"
                                                             'Stock Entry Detail-spn_rejected_qty']]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client','Purchase Receipt-Client','Stock Entry-Client']]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock", "Sales Invoice Item-rate-read_only"]]]},
