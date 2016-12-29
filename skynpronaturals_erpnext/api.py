@@ -138,6 +138,46 @@ def make_new_stock_entry(self, method):
         s.submit()
         frappe.db.commit()
 
+def pr_on_submit(self, method):
+
+    # for d in self.get('items'):
+    #     loss_qty = frappe.db.get_value("Purchase Receipt Item", filters={"parent": self.naming_series, "item_code": d.item_code}, fieldname= "spn_transit_loss_qty")
+    wh_loss = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_loss_warehouse")
+    if not wh_loss:
+        frappe.throw(_("Set default loss warehouse in SPN Settings"))
+    items_with_loss_qty = [i for i in self.get('items') if i.spn_transit_loss_qty > 0.0]
+
+    if len(items_with_loss_qty) > 0:
+
+        p = frappe.new_doc("Stock Entry")
+        p.posting_date = self.posting_date
+        p.posting_time = self.posting_time
+        p.purpose = "Material Transfer"
+        p.spn_stock_entry_type = "Default"
+        p.company = self.company or erpnext.get_default_company()
+
+        for item in items_with_loss_qty:
+            p.append("items", {
+                "item_code": item.item_code,
+                "s_warehouse": item.rejected_warehouse,
+                "t_warehouse": wh_loss,
+                "qty": item.spn_transit_loss_qty,
+                "basic_rate": item.rate,
+                "conversion_factor": 1.0,
+                "serial_no": item.serial_no,
+                'cost_center': item.cost_center,
+            })
+        p.save()
+        p.submit()
+        frappe.db.commit()
+        frappe.db.set_value(self.doctype, self.name, "spn_stock_entry", p.name)
+
+def pr_on_cancel(self, method):
+    if self.spn_stock_entry:
+        d = frappe.get_doc("Stock Entry",self.spn_stock_entry)
+        d.cancel()
+        frappe.db.commit()
+
     # tle = frappe.new_doc("Stock Entry")
 
     # orig_entry = frappe.get_doc("Stock Entry", transit_entry_name)
