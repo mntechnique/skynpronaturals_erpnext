@@ -2,6 +2,8 @@ from __future__ import unicode_literals
 import frappe, json
 import frappe
 from frappe import _
+from frappe.desk.reportview import get_match_cond
+from erpnext.controllers.queries import get_filters_cond
 
 @frappe.whitelist()
 def validate_sales_invoice(self, method):
@@ -34,8 +36,6 @@ def validate_purchase_receipt(self, method):
 
 @frappe.whitelist()
 def get_naming_series(spn_warehouse, cust_ter, cust_group):
-
-	
 
 	warehouse_state = frappe.db.get_value("Warehouse", spn_warehouse, "state")
 
@@ -214,9 +214,32 @@ def pr_on_cancel(self, method):
 	# tle.posting_date = orig_entry.posting_date
 	# tle.posting_time = orig_entry.posting_time
 
-
-
-
-
 #Spec change: 170103: Show transit loss as material issue instead of material transfer.
+
+def se_get_allowed_destination_warehouses(doctype, txt, searchfield, start, page_len, filters):
+	conditions = []
+
+	allowed_warehouses = []
+	if filters.get("user") == "assam@spntest.com":
+		allowed_warehouses = ["'(ASSAM, Guwahati) Bellezimo Professionale Products Pvt. Ltd. C/o. Siddhi Vinayak Agencies - SPN'",
+		"'(WEST BENGAL, Kolkata) Bellezimo Professionale Products Pvt. Ltd. C/o. Alloy Associates - SPN'"] 
+
+	filters.pop("user") #Dont pass user ahead
+
+	return frappe.db.sql("""select name, warehouse_name from `tabWarehouse` 
+		where ({key} like %(txt)s or name like %(txt)s) {fcond} {mcond} {whcond}
+		order by
+			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
+			idx desc, name
+		limit %(start)s, %(page_len)s""".format(**{
+			'key': searchfield,
+			'fcond': get_filters_cond(doctype, filters, conditions),
+			'mcond': get_match_cond(doctype),
+			'whcond': "and name in (" + ",".join(allowed_warehouses) + ")"
+		}), {
+			'txt': "%%%s%%" % txt,
+			'_txt': txt.replace("%", ""),
+			'start': start,
+			'page_len': page_len
+		})
 
