@@ -123,40 +123,47 @@ def create_transit_loss_stock_entry(transit_entry_name):
 
 #Make material issue instead of transfer as the loss entry:
 def make_new_stock_entry(self, method):
-	wh_src = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_warehouse")
-	#wh_loss = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_loss_warehouse")
-	if self.spn_linked_transit_entry and self.from_warehouse == wh_src: #and self.to_warehouse != wh_loss:
-		s = frappe.new_doc("Stock Entry")
-	   
-		s.posting_date = self.posting_date
-		s.posting_time = self.posting_time
 
-		if not self.company:
-			if self.source:
-				self.company = frappe.db.get_value('Warehouse', self.from_warehouse, 'company')
-			# elif self.target:
-			#     self.company = frappe.db.get_value('Warehouse', self.to_warehouse, 'company')
+	
 
-		s.purpose = "Material Issue"# Transfer"
-		s.spn_linked_transit_entry = self.name
+	items_with_loss_qty = [i for i in self.get('items') if i.spn_qty_lost > 0.0]
+	if len(items_with_loss_qty) > 0:
+		wh_src = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_warehouse")
+		
+		print "MAKING NEW STOCK ENTRY LOSS"
+			
+		if self.spn_linked_transit_entry and self.from_warehouse == wh_src: #and self.to_warehouse != wh_loss:
+			s = frappe.new_doc("Stock Entry")
+		   
+			s.posting_date = self.posting_date
+			s.posting_time = self.posting_time
 
-		s.company = self.company or erpnext.get_default_company()
-		for item in self.items:
-			s.append("items", {
-				"item_code": item.item_code,
-				"s_warehouse": wh_src,
-#               "t_warehouse": wh_loss,
-				"qty": item.spn_qty_lost,
-				"basic_rate": item.basic_rate,
-				"conversion_factor": 1.0,
-				"serial_no": item.serial_no,
-				'cost_center': item.cost_center,
-				'expense_account': item.expense_account
-			})
+			if not self.company:
+				if self.source:
+					self.company = frappe.db.get_value('Warehouse', self.from_warehouse, 'company')
+				# elif self.target:
+				#     self.company = frappe.db.get_value('Warehouse', self.to_warehouse, 'company')
 
-		s.save()
-		s.submit()
-		frappe.db.commit()
+			s.purpose = "Material Issue"# Transfer"
+			s.spn_linked_transit_entry = self.name
+
+			s.company = self.company or erpnext.get_default_company()
+			for item in self.items:
+				s.append("items", {
+					"item_code": item.item_code,
+					"s_warehouse": wh_src,
+	#               "t_warehouse": wh_loss,
+					"qty": item.spn_qty_lost,
+					"basic_rate": item.basic_rate,
+					"conversion_factor": 1.0,
+					"serial_no": item.serial_no,
+					'cost_center': item.cost_center,
+					'expense_account': item.expense_account
+				})
+
+			s.save()
+			s.submit()
+			frappe.db.commit()
 
 #Change material transfer to material issue for loss.
 def pr_on_submit(self, method):
@@ -219,11 +226,13 @@ def pr_on_cancel(self, method):
 def se_get_allowed_warehouses(doctype, txt, searchfield, start, page_len, filters):
 	conditions = []
 
-	wh_map = frappe.get_doc("SPN User Warehouse Map", frappe.session.user)
-
+	wh_map_names = frappe.get_all("SPN User Warehouse Map", {"name":frappe.session.user})
 	warehouse_clause = ""
-	if wh_map and len(wh_map.warehouses) > 0:
-		warehouse_clause = "and name in (" + ",".join([("'" + wh.warehouse + "'") for wh in wh_map.warehouses]) + ")" 
+
+	if len(wh_map_names) > 0:
+		wh_map = frappe.get_doc("SPN User Warehouse Map", wh_map_names[0])
+		if wh_map and len(wh_map.warehouses) > 0:
+			warehouse_clause = "and name in (" + ",".join([("'" + wh.warehouse + "'") for wh in wh_map.warehouses]) + ")" 
 
 	return frappe.db.sql("""select name, warehouse_name from `tabWarehouse` 
 		where ({key} like %(txt)s or name like %(txt)s) {fcond} {mcond} {whcond}
