@@ -145,7 +145,7 @@ def make_new_stock_entry(self, method):
 			s.append("items", {
 				"item_code": item.item_code,
 				"s_warehouse": wh_src,
-#                "t_warehouse": wh_loss,
+#               "t_warehouse": wh_loss,
 				"qty": item.spn_qty_lost,
 				"basic_rate": item.basic_rate,
 				"conversion_factor": 1.0,
@@ -216,15 +216,14 @@ def pr_on_cancel(self, method):
 
 #Spec change: 170103: Show transit loss as material issue instead of material transfer.
 
-def se_get_allowed_destination_warehouses(doctype, txt, searchfield, start, page_len, filters):
+def se_get_allowed_warehouses(doctype, txt, searchfield, start, page_len, filters):
 	conditions = []
 
-	allowed_warehouses = []
-	if filters.get("user") == "assam@spntest.com":
-		allowed_warehouses = ["'(ASSAM, Guwahati) Bellezimo Professionale Products Pvt. Ltd. C/o. Siddhi Vinayak Agencies - SPN'",
-		"'(WEST BENGAL, Kolkata) Bellezimo Professionale Products Pvt. Ltd. C/o. Alloy Associates - SPN'"] 
+	wh_map = frappe.get_doc("SPN User Warehouse Map", frappe.session.user)
 
-	filters.pop("user") #Dont pass user ahead
+	warehouse_clause = ""
+	if wh_map and len(wh_map.warehouses) > 0:
+		warehouse_clause = "and name in (" + ",".join([("'" + wh.warehouse + "'") for wh in wh_map.warehouses]) + ")" 
 
 	return frappe.db.sql("""select name, warehouse_name from `tabWarehouse` 
 		where ({key} like %(txt)s or name like %(txt)s) {fcond} {mcond} {whcond}
@@ -235,11 +234,10 @@ def se_get_allowed_destination_warehouses(doctype, txt, searchfield, start, page
 			'key': searchfield,
 			'fcond': get_filters_cond(doctype, filters, conditions),
 			'mcond': get_match_cond(doctype),
-			'whcond': "and name in (" + ",".join(allowed_warehouses) + ")"
+			'whcond': warehouse_clause
 		}), {
 			'txt': "%%%s%%" % txt,
 			'_txt': txt.replace("%", ""),
 			'start': start,
 			'page_len': page_len
 		})
-
