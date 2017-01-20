@@ -121,38 +121,35 @@ def get_details_from_transit_entry(transit_entry_name):
 def create_transit_loss_stock_entry(transit_entry_name):
 	pass
 
+def stock_entry_on_submit(self, method):
+	make_new_stock_entry(self, method)
+	make_new_reject_entry(self, method)
+
 #Make material issue instead of transfer as the loss entry:
 def make_new_stock_entry(self, method):
-
-	
-
 	items_with_loss_qty = [i for i in self.get('items') if i.spn_qty_lost > 0.0]
 	if len(items_with_loss_qty) > 0:
-		wh_src = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_warehouse")
 		
-		print "MAKING NEW STOCK ENTRY LOSS"
+		wh_src = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_warehouse")
 			
 		if self.spn_linked_transit_entry and self.from_warehouse == wh_src: #and self.to_warehouse != wh_loss:
 			s = frappe.new_doc("Stock Entry")
-		   
 			s.posting_date = self.posting_date
 			s.posting_time = self.posting_time
 
 			if not self.company:
 				if self.source:
 					self.company = frappe.db.get_value('Warehouse', self.from_warehouse, 'company')
-				# elif self.target:
-				#     self.company = frappe.db.get_value('Warehouse', self.to_warehouse, 'company')
-
+		
 			s.purpose = "Material Issue"# Transfer"
 			s.spn_linked_transit_entry = self.name
 
 			s.company = self.company or erpnext.get_default_company()
-			for item in self.items:
+			for item in [item for item in self.items if (item.spn_qty_lost > 0)]:
+				
 				s.append("items", {
 					"item_code": item.item_code,
 					"s_warehouse": wh_src,
-	#               "t_warehouse": wh_loss,
 					"qty": item.spn_qty_lost,
 					"basic_rate": item.basic_rate,
 					"conversion_factor": 1.0,
@@ -164,6 +161,48 @@ def make_new_stock_entry(self, method):
 			s.save()
 			s.submit()
 			frappe.db.commit()
+
+def make_new_reject_entry(self, method):
+
+	for x in xrange(1,5):
+		print "REJECT"
+
+	items_with_loss_qty = [i for i in self.get('items') if i.spn_rejected_qty> 0.0]
+	if len(items_with_loss_qty) > 0:
+		
+		wh_src = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_warehouse")
+
+		if self.spn_linked_transit_entry and self.from_warehouse == wh_src: #and self.to_warehouse != wh_loss:
+			s = frappe.new_doc("Stock Entry")
+			s.posting_date = self.posting_date
+			s.posting_time = self.posting_time
+
+			if not self.company:
+				if self.source:
+					self.company = frappe.db.get_value('Warehouse', self.from_warehouse, 'company')
+		
+			s.purpose = "Material Transfer"
+			s.spn_linked_transit_entry = self.name
+
+			s.company = self.company or erpnext.get_default_company()
+			for item in [item for item in self.items if (item.spn_rejected_qty > 0)]:
+				print "SRC", wh_src, "FROM", item.spn_rejected_warehouse				
+				s.append("items", {
+					"item_code": item.item_code,
+					"s_warehouse": wh_src,
+					"t_warehouse": item.spn_rejected_warehouse,
+					"qty": item.spn_rejected_qty,
+					"basic_rate": item.basic_rate,
+					"conversion_factor": 1.0,
+					"serial_no": item.serial_no,
+					'cost_center': item.cost_center,
+					'expense_account': item.expense_account
+				})
+
+			s.save()
+			s.submit()
+			frappe.db.commit()
+
 
 #Change material transfer to material issue for loss.
 def pr_on_submit(self, method):

@@ -88,7 +88,7 @@ doc_events = {
         "validate": "skynpronaturals_erpnext.api.validate_purchase_receipt",
     },
     "Stock Entry": {
-        "on_submit": "skynpronaturals_erpnext.api.make_new_stock_entry",
+        "on_submit": "skynpronaturals_erpnext.api.stock_entry_on_submit",
         "validate": "skynpronaturals_erpnext.api.validate_stock_entry",
     }
 }
