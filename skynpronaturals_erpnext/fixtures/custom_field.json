@@ -1494,7 +1494,7 @@
   "in_list_view": 0, 
   "in_standard_filter": 0, 
   "insert_after": "spn_rejected_qty", 
-  "label": "SPN Rejected Warehouse", 
+  "label": "Reject Warehouse", 
   "modified": "2017-01-20 16:01:27.436443", 
   "name": "Stock Entry Detail-spn_rejected_warehouse", 
   "no_copy": 0, 
