@@ -15,6 +15,10 @@ def validate_sales_invoice(self, method):
 	if not self.naming_series:
 		self.naming_series = get_naming_series(spn_warehouse,cust_ter,cust_group)
 
+	#Disallow back-dated sales invoices
+	if frappe.utils.getdate(self.posting_date) < frappe.utils.datetime.date.today():
+		frappe.throw("Please set the posting date to either today's date or a future date.<br> Back-dated invoices are not allowed.")
+
 @frappe.whitelist()
 def validate_stock_entry(self, method):
 	if self.spn_linked_transit_entry:
