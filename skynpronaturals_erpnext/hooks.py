@@ -78,6 +78,21 @@ app_license = "GPL v3"
 #	}
 # }
 
+doc_events = {
+    "Sales Invoice": {
+        "validate": "skynpronaturals_erpnext.api.validate_sales_invoice",
+    },
+     "Purchase Receipt": {
+        "on_submit": "skynpronaturals_erpnext.api.pr_on_submit",
+        "on_cancel": "skynpronaturals_erpnext.api.pr_on_cancel",
+        "validate": "skynpronaturals_erpnext.api.validate_purchase_receipt",
+    },
+    "Stock Entry": {
+        "on_submit": "skynpronaturals_erpnext.api.stock_entry_on_submit",
+        "validate": "skynpronaturals_erpnext.api.validate_stock_entry",
+    }
+}
+
 # Scheduled Tasks
 # ---------------
 
@@ -110,4 +125,37 @@ app_license = "GPL v3"
 # override_whitelisted_methods = {
 # 	"frappe.desk.doctype.event.event.get_events": "skynpronaturals_erpnext.event.get_events"
 # }
+
+fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn_warehouse', 'Customer-spn_tin_no',
+															'Customer-spn_cst_no', 'Terms and Conditions-spn_territory',
+															'Sales Invoice-spn_carrier', 'Sales Invoice-spn_mode_of_transport',
+															'Sales Invoice-spn_lr_no', 'Sales Invoice-spn_lr_date',
+															'Sales Invoice-spn_no_of_cases', 'Sales Invoice-spn_consignment_weight',
+															'Sales Invoice-spn_road_permit_no', 'Sales Invoice-cb_payload_info',
+                                                            'Warehouse-spn_letterhead',
+                                                            'Sales Invoice-sb_transport_and_payload_information',
+                                                            'Purchase Receipt-pr_carrier','Purchase Receipt-pr_mode_of_transport',
+                                                            'Purchase Receipt-pr_lr_no','Purchase Receipt-pr_lr_date',
+                                                            'Purchase Receipt-pr_no_of_cases','Purchase Receipt-pr_gross_weight',
+                                                            'Purchase Receipt-pr_road_permit_no',
+                                                            'Purchase Receipt-spn_warehouse',
+                                                            'Stock Entry-spn_stock_entry_type','Stock Entry-spn_to_warehouse',
+                                                            'Stock Entry Detail-spn_t_warehouse',
+                                                            'Stock Entry-st_carrier','Stock Entry-st_mode_of_transport',
+                                                            'Stock Entry-st_lr_no','Stock Entry-st_lr_date',
+                                                            'Stock Entry-st_no_of_cases','Stock Entry-st_gross_weight',
+                                                            'Stock Entry-st_road_permit_no', 'Stock Entry Detail-standard_rate',
+                                                            'Stock Entry-transport_and_payload_information',
+                                                            'Stock Entry-cb_transport_payload_info_1',
+                                                            'Stock Entry-spn_linked_transit_entry',
+                                                            'Stock Entry Detail-spn_qty_lost',
+                                                            "Purchase Receipt Item-spn_rejected_qty",
+                                                            "Purchase Receipt Item-spn_transit_loss_qty",
+                                                            "Purchase Receipt-spn_stock_entry",
+                                                            "Stock Entry Detail-spn_rejected_qty",
+                                                            "Stock Entry Detail-spn_rejected_warehouse",
+                                                            "Customer-spn_customer_id"]]]},
+             {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client','Purchase Receipt-Client','Stock Entry-Client']]]},
+             {"dt": "Property Setter", "filters": [["name", "in",["update_stock", "Sales Invoice Item-rate-read_only"]]]},
+             {"dt": "Print Format", "filters": [["name", "in", ["SPN Sales Invoice","Memo Invoice","Goods Receipt Note","Stock Transfer Note"]]]}]
 
