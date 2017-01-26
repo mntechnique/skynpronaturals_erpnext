@@ -293,3 +293,130 @@ def se_get_allowed_warehouses(doctype, txt, searchfield, start, page_len, filter
 			'start': start,
 			'page_len': page_len
 		})
+
+def csv_to_json():
+	import csv
+
+	file_rows = []
+	out_rows = []
+
+	csv_path = '/home/gaurav/gaurav-work/skynpro/skynpro_tally_si.csv' #frappe.utils.get_site_path() + settlement_csv
+	outfile_name = '/home/gaurav/gaurav-work/skynpro/skynpro_tally_si_out.csv'
+
+	#with open('/home/gaurav/Downloads/25a4cbe4397b494a_2016-12-03_2017-01-02.csv', 'rb') as csvfile:
+	with open(csv_path, 'rb') as csvfile:
+		rdr = csv.reader(csvfile, delimiter=str(','), quotechar=str('"'))
+	   
+		for row in rdr:
+			file_rows.append(row)
+
+		final_json = {}
+		json_data = final_json.setdefault("data", [])
+		column_headings_row = file_rows[1]
+
+		for i in xrange(2, len(file_rows)):
+			record_core = ""
+
+			if len(file_rows[i]) == len(column_headings_row):
+				for j in range(0, len(column_headings_row) - 1):
+					record_core += '"' +  column_headings_row[j] + '" : "' + file_rows[i][j] + '", '
+
+				record_json_string = "{" + record_core[:-2] + "}"
+				json_data.append(json.loads(record_json_string))
+
+		return final_json
+
+def process_invoices(debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_center="Main - SPN"):
+	def process_voucher_no(voucher_no):
+		return voucher_no, "ABC-#####"
+		
+
+	def percentage_by_voucher_no(voucher_no):
+		if "bc" in voucher_no.lower():
+			return 2.0
+		elif "bv" in voucher_no.lower():
+			return 13.5
+		elif "gv" in voucher_no.lower():
+			return 15.0
+		elif "gc" in voucher_no.lower():
+			return 2.0
+		elif "wbv" in voucher_no.lower():
+			return 15.0
+		else:
+			return None
+
+	out = []
+	
+	final_json = csv_to_json()
+	rows = final_json["data"]
+
+	#print final_json
+
+	unique_vouchers = list(set([v.get("Voucher No") for v in rows]))
+	#unique_vouchers = []
+
+	#count = 21
+	for uv in unique_vouchers:
+		newrow = []
+
+		voucher_no, naming_series = process_voucher_no(uv)
+		newrow.append(voucher_no)
+		newrow.append(naming_series)
+
+		voucher_items = [i for i in rows if i.get("Voucher No") == voucher_no]
+		
+		try:
+			net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == voucher_no])
+			grand_total = sum([
+						(float(i.get("Quantity")) * float(i.get("Rate"))) + 
+						((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == voucher_no])
+
+		except Exception as e:
+			print e, voucher_no
+			return 
+		
+		newrow.append(frappe.utils.getdate(voucher_items[0]["Date"]))
+		newrow.append("Bellezimo Professionale Products Pvt. Ltd.")
+		newrow.append("INR")
+		newrow.append(1.0)
+		newrow.append("Standard Selling")
+		newrow.append("INR")
+		newrow.append(1.0)
+		newrow.append(net_total)		
+		newrow.append(grand_total)
+		newrow.append(grand_total)
+		newrow.append(debit_to)
+
+		newrow.append("Yes") if (voucher_items[0].get("Form Name") == "C") else newrow.append("No")
+
+		newrow.append(voucher_items[0]["Stock Item Alias"])
+		newrow.append(voucher_items[0]["Item Name"])
+		newrow.append(voucher_items[0]["Quantity"])
+		newrow.append(float(voucher_items[0]["Rate"]))
+		newrow.append(float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]))
+		newrow.append(float(voucher_items[0]["Rate"]))
+		newrow.append(float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]))
+		newrow.append(income_ac)
+		newrow.append(cost_center)
+
+		out.append(newrow)
+
+		for x in xrange(1,len(voucher_items)):
+			item_row = []
+			item_row.append(voucher_items[x]["Stock Item Alias"])
+			item_row.append(voucher_items[x]["Item Name"])
+			item_row.append(float(voucher_items[x]["Quantity"]))
+			item_row.append(float(voucher_items[x]["Rate"]))
+			item_row.append(float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]))
+			item_row.append(float(voucher_items[x]["Rate"]))
+			item_row.append(float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]))
+			item_row.append(income_ac)
+			item_row.append(cost_center)
+
+			out.append(item_row)
+		
+		# count -= 1
+		# if count == 0:
+		# 	break;
+
+	return out
