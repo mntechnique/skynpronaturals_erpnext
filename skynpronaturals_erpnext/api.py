@@ -16,8 +16,8 @@ def validate_sales_invoice(self, method):
 		self.naming_series = get_naming_series(spn_warehouse,cust_ter,cust_group)
 
 	#Disallow back-dated sales invoices
-	if frappe.utils.getdate(self.posting_date) < frappe.utils.datetime.date.today():
-		frappe.throw("Please set the posting date to either today's date or a future date.<br> Back-dated invoices are not allowed.")
+	# if frappe.utils.getdate(self.posting_date) < frappe.utils.datetime.date.today():
+	# 	frappe.throw("Please set the posting date to either today's date or a future date.<br> Back-dated invoices are not allowed.")
 
 @frappe.whitelist()
 def validate_stock_entry(self, method):
@@ -293,3 +293,261 @@ def se_get_allowed_warehouses(doctype, txt, searchfield, start, page_len, filter
 			'start': start,
 			'page_len': page_len
 		})
+
+def csv_to_json():
+	import csv
+
+	file_rows = []
+	out_rows = []
+
+	csv_path = '/home/gaurav/gaurav-work/skynpro/skynpro_tally_si.csv' #frappe.utils.get_site_path() + settlement_csv
+	outfile_name = '/home/gaurav/gaurav-work/skynpro/skynpro_tally_si_out.csv'
+
+	#with open('/home/gaurav/Downloads/25a4cbe4397b494a_2016-12-03_2017-01-02.csv', 'rb') as csvfile:
+	with open(csv_path, 'rb') as csvfile:
+		rdr = csv.reader(csvfile, delimiter=str(','), quotechar=str('"'))
+	   
+		for row in rdr:
+			file_rows.append(row)
+
+		final_json = {}
+		json_data = final_json.setdefault("data", [])
+		column_headings_row = file_rows[1]
+
+		for i in xrange(2, len(file_rows)):
+			record_core = ""
+
+			if len(file_rows[i]) == len(column_headings_row):
+				for j in range(0, len(column_headings_row) - 1):
+					record_core += '"' +  column_headings_row[j] + '" : "' + file_rows[i][j] + '", '
+
+				record_json_string = "{" + record_core[:-2] + "}"
+				json_data.append(json.loads(record_json_string))
+
+		return final_json
+
+
+def process_invoices(debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_center="Main - SPN"):
+	def process_voucher_no(voucher_no):
+
+		naming_series = voucher_no[:-4] + "-#####"
+		voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5) 
+
+		print "Voucher No", voucher_no, "Naming Series", naming_series
+
+		return voucher_no, naming_series
+
+	def percentage_by_voucher_no(voucher_no):
+		if "bc" in voucher_no.lower():
+			return 2.0
+		elif "bv" in voucher_no.lower():
+			return 13.5
+		elif "gv" in voucher_no.lower():
+			return 15.0
+		elif "gc" in voucher_no.lower():
+			return 2.0
+		elif "wbv" in voucher_no.lower():
+			return 15.0
+		else:
+			return None
+
+	out = []
+	
+	final_json = csv_to_json()
+	rows = final_json["data"]
+
+	unique_vouchers = list(set([v.get("Voucher No") for v in rows]))
+	#unique_vouchers = []
+
+	processed_recs = 0
+	for uv in unique_vouchers:
+
+		try:
+			net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
+			grand_total = sum([
+						(float(i.get("Quantity")) * float(i.get("Rate"))) + 
+						((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
+
+			if net_total < 0:
+				continue
+
+		except Exception as e:
+			print e, uv
+			return 
+
+		newrow = {}
+		voucher_no, naming_series = process_voucher_no(uv)
+		newrow.update({"name": voucher_no})
+		newrow.update({"naming_series": naming_series})
+
+		voucher_items = [i for i in rows if i.get("Voucher No") == uv]
+				
+		newrow.update({"posting_date" : frappe.utils.getdate(voucher_items[0]["Date"]), 
+		"company": "Bellezimo Professionale Products Pvt. Ltd.", 
+		"customer": voucher_items[0]["Party Name"],
+		"currency": "INR",
+		"conversion_rate": 1.0,
+		"selling_price_list":"Standard Selling",
+		"price_list_currency":"INR",
+		"plc_conversion_rate" :1.0,
+		"base_net_total": net_total,
+		"base_grand_total": grand_total,
+		"grand_total": grand_total,
+		"debit_to": debit_to,
+		"c_form_applicable": "Yes" if (voucher_items[0].get("Form Name") == "C") else "No",
+		"is_return": 1 if (grand_total < 0) else 0,
+		"~": "",
+		"item_code": voucher_items[0]["Stock Item Alias"],
+		"item_name": voucher_items[0]["Item Name"],
+		"description": voucher_items[0]["Item Name"],
+		"qty": voucher_items[0]["Quantity"],
+		"rate": float(voucher_items[0]["Rate"]),
+		"amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
+		"base_rate": float(voucher_items[0]["Rate"]),
+		"base_amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
+		"income_account": income_ac,
+		"cost_center": cost_center })
+
+		out.append(newrow)
+
+		for x in xrange(1,len(voucher_items)):
+			item_row = {}
+			item_row.update({"item_code": voucher_items[x]["Stock Item Alias"],
+				"item_name": voucher_items[x]["Item Name"],
+				"description": voucher_items[x]["Item Name"],
+				"qty": float(voucher_items[x]["Quantity"]),
+				"rate":float(voucher_items[x]["Rate"]),
+				"amount":float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
+				"base_rate":float(voucher_items[x]["Rate"]),
+				"base_amount": float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
+				"income_account": income_ac,
+				"cost_center": cost_center })
+			
+			out.append(item_row)
+
+		processed_recs += 1
+
+	print "Total records processed:", processed_recs
+	return out
+	
+# def process_invoices(debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_center="Main - SPN"):
+# 	def process_voucher_no(voucher_no):
+
+# 		naming_series = voucher_no[:-4] + "-#####"
+# 		voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5) 
+
+# 		print "Voucher No", voucher_no, "Naming Series", naming_series
+
+# 		return voucher_no, naming_series
+
+# 	def percentage_by_voucher_no(voucher_no):
+# 		if "bc" in voucher_no.lower():
+# 			return 2.0
+# 		elif "bv" in voucher_no.lower():
+# 			return 13.5
+# 		elif "gv" in voucher_no.lower():
+# 			return 15.0
+# 		elif "gc" in voucher_no.lower():
+# 			return 2.0
+# 		elif "wbv" in voucher_no.lower():
+# 			return 15.0
+# 		else:
+# 			return None
+
+# 	out = []
+	
+# 	final_json = csv_to_json()
+# 	rows = final_json["data"]
+
+# 	unique_vouchers = list(set([v.get("Voucher No") for v in rows]))
+# 	#unique_vouchers = []
+
+# 	processed_recs = 0
+# 	for uv in unique_vouchers:
+
+# 		try:
+# 			net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
+# 			grand_total = sum([
+# 						(float(i.get("Quantity")) * float(i.get("Rate"))) + 
+# 						((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
+
+# 			if net_total < 0:
+# 				continue
+
+# 		except Exception as e:
+# 			print e, uv
+# 			return 
+
+# 		newrow = {}
+# 		voucher_no, naming_series = process_voucher_no(uv)
+# 		newrow.update({"name": voucher_no})
+# 		newrow.update({"naming_series": naming_series})
+
+# 		voucher_items = [i for i in rows if i.get("Voucher No") == uv]
+				
+# 		newrow.update({"posting_date" : frappe.utils.getdate(voucher_items[0]["Date"]), 
+# 		"company": "Bellezimo Professionale Products Pvt. Ltd.", 
+# 		"customer": voucher_items[0]["Party Name"],
+# 		"currency": "INR",
+# 		"conversion_rate": 1.0,
+# 		"selling_price_list":"Standard Selling",
+# 		"price_list_currency":"INR",
+# 		"plc_conversion_rate" :1.0,
+# 		"base_net_total": net_total,
+# 		"base_grand_total": grand_total,
+# 		"grand_total": grand_total,
+# 		"debit_to": debit_to,
+# 		"c_form_applicable": "Yes" if (voucher_items[0].get("Form Name") == "C") else "No",
+# 		"is_return": 1 if (grand_total < 0) else 0,
+# 		"~": "",
+# 		"item_code": voucher_items[0]["Stock Item Alias"],
+# 		"item_name": voucher_items[0]["Item Name"],
+# 		"description": voucher_items[0]["Item Name"],
+# 		"qty": voucher_items[0]["Quantity"],
+# 		"rate": float(voucher_items[0]["Rate"]),
+# 		"amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
+# 		"base_rate": float(voucher_items[0]["Rate"]),
+# 		"base_amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
+# 		"income_account": income_ac,
+# 		"cost_center": cost_center })
+
+# 		out.append(newrow)
+
+# 		for x in xrange(1,len(voucher_items)):
+# 			item_row = {}
+# 			item_row.update({"item_code": voucher_items[x]["Stock Item Alias"],
+# 				"item_name": voucher_items[x]["Item Name"],
+# 				"description": voucher_items[x]["Item Name"],
+# 				"qty": float(voucher_items[x]["Quantity"]),
+# 				"rate":float(voucher_items[x]["Rate"]),
+# 				"amount":float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
+# 				"base_rate":float(voucher_items[x]["Rate"]),
+# 				"base_amount": float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
+# 				"income_account": income_ac,
+# 				"cost_center": cost_center })
+			
+# 			out.append(item_row)
+
+# 		processed_recs += 1
+
+# 	print "Total records processed:", processed_recs
+# 	return out
+
+
+def csvtest():
+	import csv
+	
+	rows = process_invoices()
+	column_headings_row = ["name", "naming_series", "posting_date", "company", "customer", "currency", "conversion_rate", "selling_price_list", "price_list_currency", "plc_conversion_rate", "base_net_total", "base_grand_total", "grand_total", "debit_to", "c_form_applicable", "is_return", "~", "item_code", "item_name", "description", "qty","rate", "amount", "base_rate", "base_amount", "income_account", "cost_center"]
+
+	with open('/home/gaurav/Downloads/anotherone.csv', 'w') as csvfile:
+	    fieldnames = column_headings_row #['last_name', 'first_name']
+	    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+	    writer.writeheader()
+	    for row in rows:
+	    	writer.writerow(row)
+
+
+
+
