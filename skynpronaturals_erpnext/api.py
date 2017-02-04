@@ -294,14 +294,14 @@ def se_get_allowed_warehouses(doctype, txt, searchfield, start, page_len, filter
 			'page_len': page_len
 		})
 
-def csv_to_json():
+def csv_to_json(path, column_headings_row_idx=1, start_parsing_from_idx=2):
 	import csv
 
 	file_rows = []
 	out_rows = []
 
-	csv_path = '/home/gaurav/gaurav-work/skynpro/skynpro_tally_si.csv' #frappe.utils.get_site_path() + settlement_csv
-	outfile_name = '/home/gaurav/gaurav-work/skynpro/skynpro_tally_si_out.csv'
+	csv_path = path #'/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_si.csv' #frappe.utils.get_site_path() + settlement_csv
+	#outfile_name = '/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_si_out.csv'
 
 	#with open('/home/gaurav/Downloads/25a4cbe4397b494a_2016-12-03_2017-01-02.csv', 'rb') as csvfile:
 	with open(csv_path, 'rb') as csvfile:
@@ -312,30 +312,55 @@ def csv_to_json():
 
 		final_json = {}
 		json_data = final_json.setdefault("data", [])
-		column_headings_row = file_rows[1]
+		column_headings_row = file_rows[column_headings_row_idx]
 
-		for i in xrange(2, len(file_rows)):
+		#Handle repeating columns
+		processed_headings_row = []
+		for col in column_headings_row:
+			count = len([x for x in processed_headings_row if x == col])
+			if count > 0:
+				col = col + "_" + str(count)
+			processed_headings_row.append(col)
+
+		print "PROCESSED HEADINGS", processed_headings_row
+
+		for i in xrange(start_parsing_from_idx, len(file_rows)):
 			record_core = ""
 
-			if len(file_rows[i]) == len(column_headings_row):
-				for j in range(0, len(column_headings_row) - 1):
-					record_core += '"' +  column_headings_row[j] + '" : "' + file_rows[i][j] + '", '
+			if len(file_rows[i]) == len(processed_headings_row):
+				for j in range(0, len(processed_headings_row) - 1):
+					record_core += '"' +  processed_headings_row[j] + '" : "' + file_rows[i][j] + '", '
 
 				record_json_string = "{" + record_core[:-2] + "}"
 				json_data.append(json.loads(record_json_string))
 
 		return final_json
 
+		#print "FINAL JSON", final_json
 
+#------
 def process_invoices(debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_center="Main - SPN"):
 	def process_voucher_no(voucher_no):
+		
 
 		naming_series = voucher_no[:-4] + "-#####"
-		voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5) 
+		processed_voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5) 
+		warehouse = ""
 
-		print "Voucher No", voucher_no, "Naming Series", naming_series
+		#print "naming series", voucher_no[:-4].lower()
+			
+		if voucher_no[:-4].lower() in ["bc","bv","bu"]:
+			warehouse = "(MAHARASHTRA, Bhiwandi) Bellezimo Professionale Products Pvt. Ltd. C/o. Kotecha Clearing & Forwarding Pvt. Ltd.  - SPN"
+		elif voucher_no[:-4].lower() in ["gv","gc", "gu"]:
+			warehouse = "(ASSAM, Guwahati) Bellezimo Professionale Products Pvt. Ltd. C/o. Siddhi Vinayak Agencies - SPN"
+		elif voucher_no[:-4].lower() in ["wbc","wbv","wbu"]:
+			warehouse = "(WEST BENGAL, Kolkata) Bellezimo Professionale Products Pvt. Ltd. C/o. Alloy Associates - SPN"
+		else:
+			warehouse = ""
 
-		return voucher_no, naming_series
+		#print "Voucher No: ", processed_voucher_no, "Naming Series: ", naming_series, "Warehouse: ", warehouse
+
+		return processed_voucher_no, naming_series, warehouse
 
 	def percentage_by_voucher_no(voucher_no):
 		if "bc" in voucher_no.lower():
@@ -351,9 +376,27 @@ def process_invoices(debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_cen
 		else:
 			return None
 
+	def price_list_by_territory(territory):
+		# if territory == "West Bengal":
+		# 	return "West Bengal"
+		# elif territory == "Gujarat":
+		# 	return "Gujarat Registered Distributor"
+		# else:
+		return territory
+
+	def account_head_by_territory(territory):
+		return territory #+ " VAT - SPN"
+
+	def stc_template_by_territory(territory):
+		return territory #+ " VAT"
+
+
+
+
+
 	out = []
 	
-	final_json = csv_to_json()
+	final_json = csv_to_json(path='/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_si.csv')
 	rows = final_json["data"]
 
 	unique_vouchers = list(set([v.get("Voucher No") for v in rows]))
@@ -362,185 +405,121 @@ def process_invoices(debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_cen
 	processed_recs = 0
 	for uv in unique_vouchers:
 
-		try:
-			net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
-			grand_total = sum([
-						(float(i.get("Quantity")) * float(i.get("Rate"))) + 
-						((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
+		net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
+		grand_total = sum([
+					(float(i.get("Quantity")) * float(i.get("Rate"))) + 
+					((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
 
-			if net_total < 0:
-				continue
+		#print "Voucher", uv, "NET TOTAL", net_total, "GRAND TOTAL", grand_total
 
-		except Exception as e:
-			print e, uv
-			return 
+		if net_total > 0:
+			newrow = {}
+			voucher_no, naming_series, warehouse = process_voucher_no(uv)
+			newrow.update({"name": voucher_no})
+			newrow.update({"naming_series": naming_series})
 
-		newrow = {}
-		voucher_no, naming_series = process_voucher_no(uv)
-		newrow.update({"name": voucher_no})
-		newrow.update({"naming_series": naming_series})
+			voucher_items = [i for i in rows if i.get("Voucher No") == uv]
 
-		voucher_items = [i for i in rows if i.get("Voucher No") == uv]
-				
-		newrow.update({"posting_date" : frappe.utils.getdate(voucher_items[0]["Date"]), 
-		"company": "Bellezimo Professionale Products Pvt. Ltd.", 
-		"customer": voucher_items[0]["Party Name"],
-		"currency": "INR",
-		"conversion_rate": 1.0,
-		"selling_price_list":"Standard Selling",
-		"price_list_currency":"INR",
-		"plc_conversion_rate" :1.0,
-		"base_net_total": net_total,
-		"base_grand_total": grand_total,
-		"grand_total": grand_total,
-		"debit_to": debit_to,
-		"c_form_applicable": "Yes" if (voucher_items[0].get("Form Name") == "C") else "No",
-		"is_return": 1 if (grand_total < 0) else 0,
-		"~": "",
-		"item_code": voucher_items[0]["Stock Item Alias"],
-		"item_name": voucher_items[0]["Item Name"],
-		"description": voucher_items[0]["Item Name"],
-		"qty": voucher_items[0]["Quantity"],
-		"rate": float(voucher_items[0]["Rate"]),
-		"amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
-		"base_rate": float(voucher_items[0]["Rate"]),
-		"base_amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
-		"income_account": income_ac,
-		"cost_center": cost_center })
+			percentage = (float(voucher_items[0]["Percentage"] if voucher_items[0]["Percentage"] != "null" else 0.0))
+			#warehouse = frappe.db.sql("""select name from tabWarehouse where LOWER(state) = "{0}" """.format(voucher_items[0]["State"].lower()), as_dict=True)
 
-		out.append(newrow)
+			#print "WAREHOUSE", warehouse
+					
+			newrow.update({"posting_date" : frappe.utils.getdate(voucher_items[0]["Date"]), 
+			"company": "Bellezimo Professionale Products Pvt. Ltd.", 
+			"customer": voucher_items[0]["Party Name"],
+			"currency": "INR",
+			"conversion_rate": 1.0,
+			"selling_price_list": price_list_by_territory(voucher_items[0]["State_1"]),
+			"price_list_currency":"INR",
+			"plc_conversion_rate" :1.0,
+			"base_net_total": net_total,
+			"base_grand_total": grand_total,
+			"grand_total": grand_total,
+			"debit_to": debit_to,
+			"c_form_applicable": "Yes" if (voucher_items[0].get("Form Name") == "C") else "No",
+			"is_return": 1 if (grand_total < 0) else 0,
+			"due_date": frappe.utils.getdate(voucher_items[0]["Date"]),
+			"territory": voucher_items[0]["State_1"],
+			"taxes_and_charges": stc_template_by_territory(voucher_items[0]["State_1"]),
+			"spn_warehouse": warehouse, #frappe.db.get_value("Warehouse", {"state": voucher_items[0]["State"]}),
+			"~": "",
+			"item_code": voucher_items[0]["Stock Item Alias"],
+			"item_name": voucher_items[0]["Item Name"],
+			"item_description": voucher_items[0]["Item Name"],
+			"item_qty": voucher_items[0]["Quantity"],
+			"item_rate": float(voucher_items[0]["Rate"]),
+			"amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
+			"base_rate": float(voucher_items[0]["Rate"]),
+			"base_amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
+			"income_account": income_ac,
+			"cost_center": cost_center,
+			"price_list_rate": frappe.db.get_value("Item Price", {"price_list":price_list_by_territory(voucher_items[0]["State_1"]), "item_name": voucher_items[0]["Stock Item Alias"] }, "price_list_rate"),
+			"warehouse": warehouse,
+			"~": "",
+			"charge_type": "On Net Total",
+			"account_head": account_head_by_territory(voucher_items[0]["State_1"]),
+			"description": account_head_by_territory(voucher_items[0]["State_1"]),
+			"row_id": "",
+			"cost_center": cost_center,
+			"rate": percentage,
+			"tax_amount": net_total * (percentage/100),
+			"total": grand_total,
+			"tax_amount_after_discount_amount": grand_total,
+			"base_tax_amount": net_total * percentage,
+			"base_total": grand_total,
+			"base_tax_amount_after_discount_amount": net_total * (percentage/100)
+			})
 
-		for x in xrange(1,len(voucher_items)):
-			item_row = {}
-			item_row.update({"item_code": voucher_items[x]["Stock Item Alias"],
-				"item_name": voucher_items[x]["Item Name"],
-				"description": voucher_items[x]["Item Name"],
-				"qty": float(voucher_items[x]["Quantity"]),
-				"rate":float(voucher_items[x]["Rate"]),
-				"amount":float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
-				"base_rate":float(voucher_items[x]["Rate"]),
-				"base_amount": float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
-				"income_account": income_ac,
-				"cost_center": cost_center })
+			out.append(newrow)
+
+			for x in xrange(1,len(voucher_items)):
+				item_row = {}
+				item_row.update({
+					"item_code": voucher_items[x]["Stock Item Alias"],
+					"item_name": voucher_items[x]["Item Name"],
+					"item_description": voucher_items[x]["Item Name"],
+					"item_qty": float(voucher_items[x]["Quantity"]),
+					"item_rate":float(voucher_items[x]["Rate"]),
+					"amount":float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
+					"base_rate":float(voucher_items[x]["Rate"]),
+					"base_amount": float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
+					"income_account": income_ac,
+					"cost_center": cost_center,
+					"price_list_rate": frappe.db.get_value("Item Price", {"price_list" : price_list_by_territory(voucher_items[x]["State_1"]), "item_name": voucher_items[0]["Stock Item Alias"] }, "price_list_rate"),
+					"warehouse": warehouse
+					#"DO NOT Delete"
+					# "~": "",
+					# "charge_type": "On Net Total",
+					# "account_head": account_head_by_territory(voucher_items[0]["State"]),
+					# "description": account_head_by_territory(voucher_items[0]["State"]),
+					# "row_id": "",
+					# "cost_center": cost_center,
+					# "rate": percentage,
+					# "tax_amount": net_total * (percentage/100),
+					# "total": grand_total,
+					# "tax_amount_after_discount_amount": grand_total,
+					# "base_tax_amount": net_total * percentage,
+					# "base_total": grand_total,
+					# "base_tax_amount_after_discount_amount": net_total * (percentage/100)
+				})
+				out.append(item_row)
+
+			processed_recs += 1
 			
-			out.append(item_row)
-
-		processed_recs += 1
 
 	print "Total records processed:", processed_recs
 	return out
 	
-# def process_invoices(debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_center="Main - SPN"):
-# 	def process_voucher_no(voucher_no):
-
-# 		naming_series = voucher_no[:-4] + "-#####"
-# 		voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5) 
-
-# 		print "Voucher No", voucher_no, "Naming Series", naming_series
-
-# 		return voucher_no, naming_series
-
-# 	def percentage_by_voucher_no(voucher_no):
-# 		if "bc" in voucher_no.lower():
-# 			return 2.0
-# 		elif "bv" in voucher_no.lower():
-# 			return 13.5
-# 		elif "gv" in voucher_no.lower():
-# 			return 15.0
-# 		elif "gc" in voucher_no.lower():
-# 			return 2.0
-# 		elif "wbv" in voucher_no.lower():
-# 			return 15.0
-# 		else:
-# 			return None
-
-# 	out = []
-	
-# 	final_json = csv_to_json()
-# 	rows = final_json["data"]
-
-# 	unique_vouchers = list(set([v.get("Voucher No") for v in rows]))
-# 	#unique_vouchers = []
-
-# 	processed_recs = 0
-# 	for uv in unique_vouchers:
-
-# 		try:
-# 			net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
-# 			grand_total = sum([
-# 						(float(i.get("Quantity")) * float(i.get("Rate"))) + 
-# 						((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
-
-# 			if net_total < 0:
-# 				continue
-
-# 		except Exception as e:
-# 			print e, uv
-# 			return 
-
-# 		newrow = {}
-# 		voucher_no, naming_series = process_voucher_no(uv)
-# 		newrow.update({"name": voucher_no})
-# 		newrow.update({"naming_series": naming_series})
-
-# 		voucher_items = [i for i in rows if i.get("Voucher No") == uv]
-				
-# 		newrow.update({"posting_date" : frappe.utils.getdate(voucher_items[0]["Date"]), 
-# 		"company": "Bellezimo Professionale Products Pvt. Ltd.", 
-# 		"customer": voucher_items[0]["Party Name"],
-# 		"currency": "INR",
-# 		"conversion_rate": 1.0,
-# 		"selling_price_list":"Standard Selling",
-# 		"price_list_currency":"INR",
-# 		"plc_conversion_rate" :1.0,
-# 		"base_net_total": net_total,
-# 		"base_grand_total": grand_total,
-# 		"grand_total": grand_total,
-# 		"debit_to": debit_to,
-# 		"c_form_applicable": "Yes" if (voucher_items[0].get("Form Name") == "C") else "No",
-# 		"is_return": 1 if (grand_total < 0) else 0,
-# 		"~": "",
-# 		"item_code": voucher_items[0]["Stock Item Alias"],
-# 		"item_name": voucher_items[0]["Item Name"],
-# 		"description": voucher_items[0]["Item Name"],
-# 		"qty": voucher_items[0]["Quantity"],
-# 		"rate": float(voucher_items[0]["Rate"]),
-# 		"amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
-# 		"base_rate": float(voucher_items[0]["Rate"]),
-# 		"base_amount": float(voucher_items[0]["Quantity"]) * float(voucher_items[0]["Rate"]),
-# 		"income_account": income_ac,
-# 		"cost_center": cost_center })
-
-# 		out.append(newrow)
-
-# 		for x in xrange(1,len(voucher_items)):
-# 			item_row = {}
-# 			item_row.update({"item_code": voucher_items[x]["Stock Item Alias"],
-# 				"item_name": voucher_items[x]["Item Name"],
-# 				"description": voucher_items[x]["Item Name"],
-# 				"qty": float(voucher_items[x]["Quantity"]),
-# 				"rate":float(voucher_items[x]["Rate"]),
-# 				"amount":float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
-# 				"base_rate":float(voucher_items[x]["Rate"]),
-# 				"base_amount": float(voucher_items[x]["Quantity"]) * float(voucher_items[x]["Rate"]),
-# 				"income_account": income_ac,
-# 				"cost_center": cost_center })
-			
-# 			out.append(item_row)
-
-# 		processed_recs += 1
-
-# 	print "Total records processed:", processed_recs
-# 	return out
-
-
-def csvtest():
+def prepsheet_si():
 	import csv
 	
 	rows = process_invoices()
-	column_headings_row = ["name", "naming_series", "posting_date", "company", "customer", "currency", "conversion_rate", "selling_price_list", "price_list_currency", "plc_conversion_rate", "base_net_total", "base_grand_total", "grand_total", "debit_to", "c_form_applicable", "is_return", "~", "item_code", "item_name", "description", "qty","rate", "amount", "base_rate", "base_amount", "income_account", "cost_center"]
+	column_headings_row = ["name", "naming_series", "posting_date", "company", "customer", "currency", "conversion_rate", "selling_price_list", "price_list_currency", "plc_conversion_rate", "base_net_total", "base_grand_total", "grand_total", "debit_to", "c_form_applicable", "is_return", "due_date", "territory", "taxes_and_charges", "spn_warehouse", 
+			"~", "item_code", "item_name", "item_description", "item_qty","item_rate", "amount", "base_rate", "base_amount", "income_account", "cost_center", "price_list_rate", "warehouse", 
+			"~", "charge_type", "account_head", "description", "row_id", "cost_center", "rate", "tax_amount", "total", "tax_amount_after_discount_amount", "base_tax_amount", "base_total", "base_tax_amount_after_discount_amount"]
 
-	with open('/home/gaurav/Downloads/anotherone.csv', 'w') as csvfile:
+	with open('/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_si_out.csv', 'w') as csvfile:
 	    fieldnames = column_headings_row #['last_name', 'first_name']
 	    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
@@ -548,6 +527,160 @@ def csvtest():
 	    for row in rows:
 	    	writer.writerow(row)
 
+
+#Stock entry
+def process_stock_entries():
+
+	def get_processed_txn_no_and_series(txn_no):
+		return {
+				"txn_no": txn_no[:-4] + "-" + txn_no[-4:].zfill(5),
+				"naming_series": txn_no[:-4] + "-#####",
+			}
+
+
+	def get_warehouses(godown_name):
+		warehouse = ""
+		reject_warehouse = ""
+
+		if godown_name == "Guwahati":
+			warehouse = "(ASSAM, Guwahati) Bellezimo Professionale Products Pvt. Ltd. C/o. Siddhi Vinayak Agencies - SPN"
+			reject_warehouse = "Re"
+		elif godown_name == "Bhiwandi":	
+			warehouse = "(MAHARASHTRA, Bhiwandi) Bellezimo Professionale Products Pvt. Ltd. C/o. Kotecha Clearing & Forwarding Pvt. Ltd.  - SPN"
+		elif godown_name == "Kolkata":
+			warehouse = "(WEST BENGAL, Kolkata) Bellezimo Professionale Products Pvt. Ltd. C/o. Alloy Associates - SPN"
+		elif godown_name == "Paonta Sahib":
+			warehouse = godown_name
+
+		return {
+			"warehouse": warehouse,
+			"reject_warehouse": reject_warehouse
+		}
+
+	final_json = csv_to_json('/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_stockentry.csv', 0, 1)
+	rows = final_json["data"]
+
+	unique_stnnos = list(set([v.get("STN No.") for v in rows]))
+
+	out = []
+
+	processed_recs = 0
+	for stn_no in unique_stnnos:
+		stn_items = [x for x in rows if x["STN No."] == stn_no]
+
+		# print "STN No", stn_no
+		# print "GRN No", stn_items[0]["GRN No."]
+		# print "-----"
+		# for item in stn_items:
+		# 	print item
+		# print "-----"
+		
+		newrow_stn = {
+			"name": get_processed_txn_no_and_series(stn_no)["txn_no"],
+			"naming_series": get_processed_txn_no_and_series(stn_no)["naming_series"],
+			"purpose": "Material Issue",
+			"company": "Bellezimo Professionale Products Pvt. Ltd.", 
+			"posting_date": frappe.utils.getdate(stn_items[0]["STN Date"]),
+			"posting_time": frappe.utils.get_time("00:00:00"),
+			"~": "",
+			"item_code": stn_items[0]["Item Alias"],
+			"qty": stn_items[0]["Quantity"],
+			"uom": "Nos",
+			"conversion_factor": 1.0,
+			"stock_uom": "Nos",
+			"transfer_qty": stn_items[0]["Quantity"],
+			"s_warehouse": get_warehouses(stn_items[0]["Godown Name_1"])["warehouse"],
+			"description": stn_items[0]["Item Name"],
+			"~": ""
+		}
+		out.append(newrow_stn)
+
+		for x in xrange(1, len(stn_items)):
+			item_row = {
+				"item_code": stn_items[x]["Item Alias"],
+				"qty": stn_items[x]["Quantity"],
+				"uom": "Nos",
+				"conversion_factor": 1.0,
+				"stock_uom": "Nos",
+				"transfer_qty": stn_items[x]["Quantity"],
+				"s_warehouse": get_warehouses(stn_items[x]["Godown Name_1"])["warehouse"],
+				"description": stn_items[x]["Item Name"],
+				"~": ""
+			}
+			out.append(item_row)
+
+	
+
+		newrow_grn = {
+			"name": get_processed_txn_no_and_series(stn_items[0]["GRN No."])["txn_no"],
+			"naming_series": get_processed_txn_no_and_series(stn_items[0]["GRN No."])["naming_series"],
+			"purpose": "Material Receipt",
+			"company": "Bellezimo Professionale Products Pvt. Ltd.", 
+			"posting_date": frappe.utils.getdate(stn_items[0]["Date"]),
+			"posting_time": frappe.utils.get_time("00:00:00"),
+			"~": "",
+			"item_code": stn_items[0]["Item Alias_1"],
+			"qty": stn_items[0]["Quantity_1"],
+			"uom": "Nos",
+			"conversion_factor": 1.0,
+			"stock_uom": "Nos",
+			"transfer_qty": stn_items[0]["Quantity_1"],
+			"t_warehouse": get_warehouses(stn_items[0]["Godown Name"])["warehouse"],
+			"description": stn_items[0]["Item Name_1"],
+			"~": ""
+		}
+		out.append(newrow_grn)
+
+		for x in xrange(1, len(stn_items)):
+			grn_item_row = {
+				"item_code": stn_items[x]["Item Alias_1"],
+				"qty": stn_items[x]["Quantity_1"],
+				"uom": "Nos",
+				"conversion_factor": 1.0,
+				"stock_uom": "Nos",
+				"transfer_qty": stn_items[x]["Quantity_1"],
+				"t_warehouse": get_warehouses(stn_items[x]["Godown Name"])["warehouse"],
+				"description": stn_items[x]["Item Name_1"],
+				"~": ""
+			}
+			out.append(grn_item_row)
+
+		# processed_recs += 1
+		# if processed_recs == 5:
+		# 	break
+	#print processed_recs	
+	return out
+
+def prepsheet_stock_entry():
+	import csv
+
+	rows = process_stock_entries()
+	column_headings_row = ["name", "naming_series", "purpose", "company", "posting_date", "posting_time", "~", "item_code", "description", "qty", "uom", "conversion_factor", "stock_uom", "transfer_qty", "s_warehouse", "t_warehouse", "~"]
+
+	with open('/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_stockentry_out.csv', 'w') as csvfile:
+	    fieldnames = column_headings_row
+	    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+	    writer.writeheader()
+	    for row in rows:
+	    	writer.writerow(row)
+
+
+# def read_csv(path, column_headings_row_idx=0):
+# 	file_rows = []
+# 	out_rows = []
+
+# 	csv_path = path #'/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_si.csv' #frappe.utils.get_site_path() + settlement_csv
+
+# 	with open(csv_path, 'rb') as csvfile:
+# 		rdr = csv.reader(csvfile, delimiter=str(','), quotechar=str('"'))
+	   
+# 		for row in rdr:
+# 			file_rows.append(row)
+
+# 		column_headings_row = file_rows[column_headings_row_idx]
+
+# 		for i in xrange(start_parsing_from_idx, len(file_rows)):
 
 
 
