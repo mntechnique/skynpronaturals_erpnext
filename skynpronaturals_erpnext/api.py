@@ -908,8 +908,8 @@ def process_sheet_and_create_si(path_to_sheet, debit_to="Debtors - SPN", income_
 		#rowmsg.append("Records processed {0}".format(processed_recs))
 		msgs.append("\n".join(rowmsg))
 
-		if processed_recs == 5:
-			break
+		# if processed_recs == 5:
+		# 	break
 
 	print "Total records processed:", processed_recs
 	msgs.append("Total records processed: {0}".format(processed_recs))
