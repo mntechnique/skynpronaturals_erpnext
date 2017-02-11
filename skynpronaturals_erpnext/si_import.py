@@ -208,9 +208,6 @@ def process_sheet_and_create_si(path_to_sheet, path_to_returns_map, debit_to="De
 
 	 	print "\n".join(rowmsg), " Rec# ", processed_recs
 
-	 	if processed_recs == 100:
-	 		break
-
  	msgs.append("Processed vouchers: {0}".format(processed_recs))
 	print "Processed vouchers: {0}".format(processed_recs)
 
