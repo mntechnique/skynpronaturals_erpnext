@@ -208,6 +208,8 @@ def process_sheet_and_create_si(path_to_sheet, path_to_returns_map, debit_to="De
 
 	 	print "\n".join(rowmsg), " Rec# ", processed_recs
 
+	 	if processed_recs == 100:
+	 		break
 
  	msgs.append("Processed vouchers: {0}".format(processed_recs))
 	print "Processed vouchers: {0}".format(processed_recs)
@@ -217,9 +219,11 @@ def process_sheet_and_create_si(path_to_sheet, path_to_returns_map, debit_to="De
 def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehouse, letter_head, net_total, grand_total, percentage, returns_map_dict, debit_to, income_ac, cost_center):
 	rowmsg = []
 
+	posting_date = frappe.utils.datetime.datetime.strptime(voucher_items[0]["Date"], "%d-%m-%Y")
+
 	si = frappe.new_doc("Sales Invoice")
 	si.naming_series = naming_series
-	si.posting_date = frappe.utils.datetime.datetime.strptime(voucher_items[0]["Date"], "%d-%m-%Y").date() #frappe.utils.getdate(voucher_items[0]["Date"])
+	si.posting_date = posting_date #frappe.utils.datetime.datetime.strptime(voucher_items[0]["Date"], "%d-%m-%Y")#.date() #frappe.utils.getdate(voucher_items[0]["Date"])
 	si.company = "Bellezimo Professionale Products Pvt. Ltd."
 	si.customer = voucher_items[0]["Party Name"]
 	si.currency = "INR"
@@ -233,7 +237,7 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 	si.debit_to = debit_to
 	si.c_form_applicable = "Yes" if (voucher_items[0].get("Form Name") == "C") else "No"
 	si.is_return = 1 if (grand_total < 0) else 0
-	si.due_date = frappe.utils.datetime.datetime.strptime(voucher_items[0]["Date"], "%d-%m-%Y").date() #frappe.utils.getdate(voucher_items[0]["Date"])
+	si.due_date = si.posting_date #frappe.utils.datetime.datetime.strptime(voucher_items[0]["Date"], "%d-%m-%Y").date() #frappe.utils.getdate(voucher_items[0]["Date"])
 	si.territory = get_corrected_territory(voucher_items[0]["State_1"])
 	si.taxes_and_charges = stc_template_by_naming_series_tax_percentage(voucher_no, percentage)
 	si.spn_warehouse = warehouse
@@ -247,6 +251,8 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 			processed_voucher_no = process_voucher_no(return_against[0])[0]
 			rowmsg.append("Return against: {0}".format(processed_voucher_no))
 			si.return_against = processed_voucher_no
+
+	rowmsg.append("Original Date: {0}, SI Date {1}".format(voucher_items[0]["Date"], si.posting_date))
 
 	for item in voucher_items:
 
