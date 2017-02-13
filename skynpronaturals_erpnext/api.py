@@ -1196,3 +1196,11 @@ def get_log_dump(filecontent):
 # 	content = "\n".join(msgs)
 
 # 	return content
+
+@frappe.whitelist()
+def get_spn_discount(discount, total_to_compare):
+	out = 0.0
+
+	for item in frappe.get_all("SPN Monthly Discount Item", fields=["*"], filters ={"parent": discount}):
+		if (float(total_to_compare) >= item.slab_from) and (float(total_to_compare) <= item.slab_to): 				 
+			return item.discount_pct
