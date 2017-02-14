@@ -154,7 +154,8 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             "Purchase Receipt-spn_stock_entry",
                                                             "Stock Entry Detail-spn_rejected_qty",
                                                             "Stock Entry Detail-spn_rejected_warehouse",
-                                                            "Customer-spn_customer_id","Sales Invoice-spn_monthly_discount"]]]},
+                                                            "Customer-spn_customer_id","Sales Invoice-spn_monthly_discount", 
+                                                            "Sales Order-spn_tp_so_name"]]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-client','Purchase Receipt-Client','Stock Entry-Client']]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock", "Sales Invoice Item-rate-read_only"]]]},
              {"dt": "Print Format", "filters": [["name", "in", ["SPN Sales Invoice","Memo Invoice","Goods Receipt Note","Stock Transfer Note"]]]}]
