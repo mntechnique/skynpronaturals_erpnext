@@ -21,5 +21,21 @@ frappe.ui.form.on('SPN Tally Data Import Tool', {
 				}
 			}
 		})
+	},
+	btn_import_se: function(frm) {
+		console.log("BUTTON");
+		frappe.call({
+			method: "skynpronaturals_erpnext.se_import.process_stock_entries",
+			args: { 
+				path_to_sheet: frm.doc.attach_sheet_se
+			},
+			freeze: true,
+			freeze_message: "Importing...",
+			callback: function(r) {
+				if(r) {
+					console.log(r.message);
+				}
+			}
+		});
 	}
 });
