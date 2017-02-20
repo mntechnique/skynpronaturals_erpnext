@@ -192,6 +192,7 @@ def process_sheet_and_create_si(path_to_sheet, path_to_returns_map, debit_to="De
 		if frappe.db.get_value("Sales Invoice", {"name": voucher_no}, "name"):
 			rowmsg.append("Voucher {0} already exists".format(voucher_no))
 			print voucher_no, " already exists."
+			msgs.append("\n".join(rowmsg))
 			continue
 
 		#Append
