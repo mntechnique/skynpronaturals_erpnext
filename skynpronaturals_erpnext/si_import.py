@@ -11,7 +11,7 @@ from frappe.utils.pdf import get_pdf
 import pdfkit	
 import os
 
-
+import sys
 
 def csv_to_json(path, column_headings_row_idx=1, start_parsing_from_idx=2):
 	import csv
@@ -249,7 +249,7 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 			rowmsg.append("Return against: {0}".format(processed_voucher_no))
 			si.return_against = processed_voucher_no
 
-	rowmsg.append("Original Date: {0}, SI Date {1}".format(voucher_items[0]["Date"], si.posting_date))
+	# rowmsg.append("Original Date: {0}, SI Date {1}".format(voucher_items[0]["Date"], si.posting_date))
 
 	for item in voucher_items:
 
@@ -290,6 +290,6 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 		rename_doc("Sales Invoice", si.name, voucher_no, force=True)
 		rowmsg.append("Renamed to {0}".format(voucher_no))
 	except Exception as e:
-		rowmsg.append("not saved: {1}".format(voucher_no, e))
+		rowmsg.append("not saved: {1}, {2}".format(voucher_no, sys.exc_info()[0], sys.exc_info()[1]))
 
 	return "\n".join(rowmsg)
