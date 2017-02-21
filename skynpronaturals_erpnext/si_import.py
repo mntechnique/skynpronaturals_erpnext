@@ -127,11 +127,13 @@ def account_head_by_naming_series(voucher_no):
 		return None	
 
 def price_list_by_customer_or_net_total(customer, net_total):
+
+	cg = "-"
+
 	try:
 		cg = frappe.db.get_value("Customer", {"name": customer}, "customer_group")
 	except Exception as e:
-		return "-"
-
+		return cg
 
 	print "Customer Group", cg, " : Cust: '", customer, "'"
 
