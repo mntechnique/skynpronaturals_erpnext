@@ -226,7 +226,12 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 	si.customer = voucher_items[0]["Party Name"]
 	si.currency = "INR"
 	si.conversion_rate = 1.0
-	si.selling_price_list = price_list_by_customer_or_net_total(voucher_items[0]["Party Name"], net_total)
+
+	try:		
+		si.selling_price_list = price_list_by_customer_or_net_total(voucher_items[0]["Party Name"], net_total)
+	except Exception as e:
+		rowmsg.append("Price list couldn't be loaded. {0}".format(e))
+
 	si.price_list_currency = "INR"
 	si.plc_conversion_rate = 1.0
 	si.base_net_total = net_total
