@@ -127,8 +127,11 @@ def account_head_by_naming_series(voucher_no):
 		return None	
 
 def price_list_by_customer_or_net_total(customer, net_total):
+	try:
+		cg = frappe.db.get_value("Customer", {"name": customer}, "customer_group")
+	except Exception as e:
+		return "-"
 
-	cg = frappe.db.get_value("Customer", {"name": customer}, "customer_group")
 
 	print "Customer Group", cg, " : Cust: '", customer, "'"
 
@@ -227,10 +230,13 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 	si.currency = "INR"
 	si.conversion_rate = 1.0
 
-	try:		
-		si.selling_price_list = price_list_by_customer_or_net_total(voucher_items[0]["Party Name"], net_total)
-	except Exception as e:
-		rowmsg.append("Price list couldn't be loaded. {0}".format(e))
+	
+	spl = price_list_by_customer_or_net_total(voucher_items[0]["Party Name"], net_total)
+	
+	if spl != "-":
+		si.selling_price_list = spl	
+	else:
+		return "Price List by customer was not loaded. (PartyName: {0}, NetTotal: {1}".format(voucher_items[0]["Party Name"], net_total)
 
 	si.price_list_currency = "INR"
 	si.plc_conversion_rate = 1.0
