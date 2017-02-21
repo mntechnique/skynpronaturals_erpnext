@@ -457,6 +457,6 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 		rename_doc("Sales Invoice", si.name, voucher_no, force=True)
 		rowmsg.append("Renamed to {0}".format(voucher_no))
 	except Exception as e:
-		rowmsg.append("not saved: {1}, {2}".format(voucher_no, sys.exc_info()[0], sys.exc_info()[1]))
+		rowmsg.append("not saved: {1}, {2}".format(voucher_no, e))
 
 	return "\n".join(rowmsg)
