@@ -128,12 +128,10 @@ def account_head_by_naming_series(voucher_no):
 
 def price_list_by_customer_or_net_total(customer, net_total):
 
-	cg = "-"
-
 	try:
 		cg = frappe.db.get_value("Customer", {"name": customer}, "customer_group")
 	except Exception as e:
-		return cg
+		raise Exception("Customer group not found for '{0}'".format(customer))
 
 	print "Customer Group", cg, " : Cust: '", customer, "'"
 
@@ -356,7 +354,7 @@ def process_sheet_and_create_si(path_to_sheet, path_to_returns_map, debit_to="De
 			voucher_items = [i for i in rows if i.get("Voucher No") == uv]
 			percentage = (float(voucher_items[0]["Percentage"] if voucher_items[0]["Percentage"] != "null" else 0.0))
 		
-		 	rowmsg.append(make_si(uv, voucher_no, voucher_items, naming_series, warehouse, letter_head, net_total, grand_total, percentage, returns_map_dict, debit_to, income_ac, cost_center))
+		 	make_si(uv, voucher_no, voucher_items, naming_series, warehouse, letter_head, net_total, grand_total, percentage, returns_map_dict, debit_to, income_ac, cost_center)
 
 		 	processed_recs += 1
 		 	# msgs.append("\n".join(rowmsg))
@@ -386,13 +384,9 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 	si.currency = "INR"
 	si.conversion_rate = 1.0
 
-	spl = price_list_by_customer_or_net_total(voucher_items[0]["Party Name"], net_total)
 	
-	if spl != "-":
-		si.selling_price_list = spl	
-	else:
-		return "Price List by customer was not loaded. (PartyName: {0}, NetTotal: {1}".format(voucher_items[0]["Party Name"], net_total)
-
+	si.selling_price_list = price_list_by_customer_or_net_total(voucher_items[0]["Party Name"], net_total)
+	
 	si.price_list_currency = "INR"
 	si.plc_conversion_rate = 1.0
 	si.base_net_total = net_total
