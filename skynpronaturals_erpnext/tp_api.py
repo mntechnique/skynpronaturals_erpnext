@@ -12,15 +12,18 @@ def sales_order(so=None):
 	
 	if so :
 		so = json.loads(so)  #sales_order 		
-		if so.spn_tp_so_id:
-			sales_order = frappe.get_doc("Sales Order", filters={"spn_tp_so_id":so.spn_tp_so_id})
-			if sales_order.docstatus == 1:
-				return "Cannot update submitted Sales Order" + str(so.spn_tp_so_id)
-		else:
-			sales_order = frappe.new_doc("Sales Order")
-	
+		if so.get("spn_tp_so_id"):
+			so_name = frappe.db.get_value("Sales Order", {"spn_tp_so_id": so.get("spn_tp_so_id")}, "name")
+
+			if so_name:
+				sales_order = frappe.get_doc("Sales Order", so_name)
+				if sales_order.docstatus == 1:
+					return "Cannot update submitted Sales Order " + str(so.get("spn_tp_so_id"))
+			else:
+				sales_order = frappe.new_doc("Sales Order")
+		
 		sales_order.update(so)
-		sales_order.save()
+		sales_order.save(ignore_permissions=True)
 		frappe.db.commit()
 	else:
 		return "Please specify Sales Order"

@@ -11,7 +11,7 @@ from frappe.utils.pdf import get_pdf
 import pdfkit	
 import os
 
-
+import sys
 
 def csv_to_json(path, column_headings_row_idx=1, start_parsing_from_idx=2):
 	import csv
@@ -127,29 +127,32 @@ def account_head_by_naming_series(voucher_no):
 		return None	
 
 def price_list_by_customer_or_net_total(customer, net_total):
-
-	cg = frappe.db.get_value("Customer", {"name": customer}, "customer_group")
-
-	print "Customer Group", cg, " : Cust: '", customer, "'"
-
-	if net_total <= 5.0: ##Less than two means memo invoice.
-		return "MEMO/ZERO INVOICING"
-
-	if ("maharashtra" in cg.lower()) or ("maharastra" in cg.lower()):
-		return "Maharashtra"
-	elif "west bengal" in cg.lower():
-		return "West Bengal (VAT)"
-	elif "assam" in cg.lower():
-		return "Assam"
-	elif "gujarat" in cg.lower():
-		if "registered" in cg.lower():
-			return "Gujarat Registered Distributor"
-		elif "unregistered" in cg.lower():
-			return "Gujarat Unregistered Distributor"
+	try:
+		cg = frappe.db.get_value("Customer", {"name": customer}, "customer_group")
+	except Exception as e:
+		raise Exception("Cust Grp fetch failed '{0}'".format(customer))
 	else:
-		return cg
+		if net_total <= 5.0: ##Less than two means memo invoice.
+			return "MEMO/ZERO INVOICING"
+
+		if ("maharashtra" in cg.lower()) or ("maharastra" in cg.lower()):
+			return "Maharashtra"
+		elif "west bengal" in cg.lower():
+			return "West Bengal (VAT)"
+		elif "assam" in cg.lower():
+			return "Assam"
+		elif "gujarat" in cg.lower():
+			if "registered" in cg.lower():
+				return "Gujarat Registered Distributor"
+			elif "unregistered" in cg.lower():
+				return "Gujarat Unregistered Distributor"
+		else:
+			return cg
 
 def get_corrected_territory(territory):
+	if not territory:
+		raise Exception("No territory found!")
+
 	if "maha" in territory.lower():
 		return "Maharashtra"
 	elif "delhi" in territory.lower():
@@ -157,61 +160,211 @@ def get_corrected_territory(territory):
 	else:
 		return territory
 
+# @frappe.whitelist()
+# def process_sheet_and_create_si(path_to_sheet, path_to_returns_map, debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_center="Main - SPN"):
+# 	from frappe.model.rename_doc import rename_doc
+
+# 	msgs, out = [], []
+	
+# 	final_json = csv_to_json(path=path_to_sheet)
+# 	rows = final_json["data"]
+	
+# 	#Get returns map dict
+# 	returns_map_dict = csv_to_json(path_to_returns_map, 0, 1)
+
+# 	unique_vouchers = list(set([v.get("Voucher No") for v in rows]))
+
+# 	processed_recs = 0
+
+# 	msgs.append("Vouchers to process: {0}".format(len(unique_vouchers)))
+
+# 	print "Vouchers to process: {0}".format(len(unique_vouchers))
+
+# 	for uv in unique_vouchers:
+# 		rowmsg = []
+# 		voucher_no, naming_series, warehouse, letter_head = process_voucher_no(uv)
+
+# 		rowmsg.append("Processing voucher: {0}".format(uv))
+
+# 		net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
+# 		grand_total = sum([
+# 					(float(i.get("Quantity")) * float(i.get("Rate"))) + 
+# 					((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
+
+# 		#Skip if already exists
+# 		if frappe.db.get_value("Sales Invoice", {"name": voucher_no}, "name"):
+# 			rowmsg.append("Voucher {0} already exists".format(voucher_no))
+# 			print voucher_no, " already exists."
+# 			msgs.append("\n".join(rowmsg))
+# 			continue
+
+# 		#Append
+# 		if net_total < 0:
+# 		 	rowmsg.append("Return Invoice. (Net: {1}, Grand: {2})".format(uv, net_total, grand_total))
+
+# 		voucher_items = [i for i in rows if i.get("Voucher No") == uv]
+# 		percentage = (float(voucher_items[0]["Percentage"] if voucher_items[0]["Percentage"] != "null" else 0.0))
+	
+# 	 	rowmsg.append(make_si(uv, voucher_no, voucher_items, naming_series, warehouse, letter_head, net_total, grand_total, percentage, returns_map_dict, debit_to, income_ac, cost_center))
+
+# 	 	processed_recs += 1
+# 	 	msgs.append("\n".join(rowmsg))
+
+# 	 	print "\n".join(rowmsg), " Rec# ", processed_recs
+
+#  	msgs.append("Processed vouchers: {0}".format(processed_recs))
+# 	print "Processed vouchers: {0}".format(processed_recs)
+
+# 	return "\n".join(msgs)
+
+# def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehouse, letter_head, net_total, grand_total, percentage, returns_map_dict, debit_to, income_ac, cost_center):
+# 	rowmsg = []
+
+# 	posting_date = frappe.utils.datetime.datetime.strptime(voucher_items[0]["Date"], "%d-%m-%Y")
+
+# 	si = frappe.new_doc("Sales Invoice")
+# 	si.naming_series = naming_series
+# 	si.posting_date = posting_date #frappe.utils.datetime.datetime.strptime(voucher_items[0]["Date"], "%d-%m-%Y")#.date() #frappe.utils.getdate(voucher_items[0]["Date"])
+# 	si.company = "Bellezimo Professionale Products Pvt. Ltd."
+# 	si.customer = voucher_items[0]["Party Name"]
+# 	si.currency = "INR"
+# 	si.conversion_rate = 1.0
+
+	
+# 	spl = price_list_by_customer_or_net_total(voucher_items[0]["Party Name"], net_total)
+	
+# 	if spl != "-":
+# 		si.selling_price_list = spl	
+# 	else:
+# 		return "Price List by customer was not loaded. (PartyName: {0}, NetTotal: {1}".format(voucher_items[0]["Party Name"], net_total)
+
+# 	si.price_list_currency = "INR"
+# 	si.plc_conversion_rate = 1.0
+# 	si.base_net_total = net_total
+# 	si.base_grand_total = grand_total
+# 	si.grand_total = grand_total
+# 	si.debit_to = debit_to
+# 	si.c_form_applicable = "Yes" if (voucher_items[0].get("Form Name") == "C") else "No"
+# 	si.is_return = 1 if (grand_total < 0) else 0
+# 	si.due_date = si.posting_date #frappe.utils.datetime.datetime.strptime(voucher_items[0]["Date"], "%d-%m-%Y").date() #frappe.utils.getdate(voucher_items[0]["Date"])
+# 	si.territory = get_corrected_territory(voucher_items[0]["State_1"])
+# 	si.taxes_and_charges = stc_template_by_naming_series_tax_percentage(voucher_no, percentage)
+# 	si.spn_warehouse = warehouse
+# 	si.letter_head = letter_head
+	
+# 	if net_total < 0:
+# 		si.is_return = "Yes"
+# 		return_against = [r['Original Invoice'] for r in returns_map_dict["data"] if r["Cancelled Invoice"] == tally_voucher_no]
+
+# 		if len(return_against) > 0:
+# 			processed_voucher_no = process_voucher_no(return_against[0])[0]
+# 			rowmsg.append("Return against: {0}".format(processed_voucher_no))
+# 			si.return_against = processed_voucher_no
+
+# 	# rowmsg.append("Original Date: {0}, SI Date {1}".format(voucher_items[0]["Date"], si.posting_date))
+
+# 	for item in voucher_items:
+
+# 		si.append("items", {
+# 			"item_code": item["Stock Item Alias"],
+# 			"item_name": item["Item Name"],
+# 			"description": item["Item Name"],
+# 			"qty": float(item["Quantity"]),
+# 			"rate": float(item["Rate"]),
+# 			"amount": float(item["Quantity"]) * float(item["Rate"]),
+# 			"base_rate": float(item["Rate"]),
+# 			"base_amount": float(item["Quantity"]) * float(item["Rate"]),
+# 			"income_account": income_ac,
+# 			"cost_center": cost_center,
+# 			"price_list_rate": frappe.db.get_value("Item Price", {"price_list": si.selling_price_list, "item_name": item["Stock Item Alias"] }, "price_list_rate"),
+# 			"warehouse": warehouse,
+# 		})
+
+# 	si.append("taxes", {
+# 		"charge_type": "On Net Total",
+# 		"account_head": account_head_by_naming_series(voucher_no),
+# 		"description": frappe.db.get_value("Sales Taxes and Charges", {"account_head": account_head_by_naming_series(voucher_no), "parent": stc_template_by_naming_series_tax_percentage(voucher_no, percentage)}, "description"),
+# 		"cost_center": cost_center,
+# 		"rate": percentage,
+# 		"tax_amount": net_total * (percentage/100),
+# 		"total": grand_total,
+# 		"tax_amount_after_discount_amount": grand_total,
+# 		"base_tax_amount": net_total * percentage,
+# 		"base_total": grand_total,
+# 		"base_tax_amount_after_discount_amount": net_total * (percentage/100)	
+# 	})
+
+# 	try:
+# 		si.save()
+# 		frappe.db.commit()
+# 		#'"Invoice Saved. ({0})".format(si.name))
+# 		rowmsg.append("Invoice Saved. ({0})".format(si.name))
+# 		rename_doc("Sales Invoice", si.name, voucher_no, force=True)
+# 		rowmsg.append("Renamed to {0}".format(voucher_no))
+# 	except Exception as e:
+# 		rowmsg.append("not saved: {1}, {2}".format(voucher_no, sys.exc_info()[0], sys.exc_info()[1]))
+
+# 	return "\n".join(rowmsg)
+
+
 @frappe.whitelist()
 def process_sheet_and_create_si(path_to_sheet, path_to_returns_map, debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_center="Main - SPN"):
 	from frappe.model.rename_doc import rename_doc
 
 	msgs, out = [], []
-	
 	final_json = csv_to_json(path=path_to_sheet)
 	rows = final_json["data"]
-	
+
 	#Get returns map dict
 	returns_map_dict = csv_to_json(path_to_returns_map, 0, 1)
-
 	unique_vouchers = list(set([v.get("Voucher No") for v in rows]))
-
 	processed_recs = 0
 
-	msgs.append("Vouchers to process: {0}".format(len(unique_vouchers)))
+	msgs.append("Total Vouchers: {0}".format(len(unique_vouchers)))
 
-	print "Vouchers to process: {0}".format(len(unique_vouchers))
+	sorted_vouchers = sorted(unique_vouchers)
 
-	for uv in unique_vouchers:
-		rowmsg = []
-		voucher_no, naming_series, warehouse, letter_head = process_voucher_no(uv)
+	for uv in sorted_vouchers:
+		rowmsg = []		
+		try:
+			voucher_no, naming_series, warehouse, letter_head = process_voucher_no(uv)
 
-		rowmsg.append("Processing voucher: {0}".format(uv))
+			rowmsg.append(uv)
 
-		net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
-		grand_total = sum([
-					(float(i.get("Quantity")) * float(i.get("Rate"))) + 
-					((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
+			net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
+			grand_total = sum([
+						(float(i.get("Quantity")) * float(i.get("Rate"))) + 
+						((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
 
-		#Skip if already exists
-		if frappe.db.get_value("Sales Invoice", {"name": voucher_no}, "name"):
-			rowmsg.append("Voucher {0} already exists".format(voucher_no))
-			print voucher_no, " already exists."
-			continue
+			#Skip if already exists
+			if frappe.db.get_value("Sales Invoice", {"name": voucher_no}, "name"):
+				rowmsg.append("already exists.")
+				msgs.append(", ".join(rowmsg))
+				continue
 
-		#Append
-		if net_total < 0:
-		 	rowmsg.append("Return Invoice. (Net: {1}, Grand: {2})".format(uv, net_total, grand_total))
+			#Append
+			if net_total < 0:
+			 	rowmsg.append("Is Return")
+			 	rowmsg.append("(Net:{1},Grand:{2})".format(uv, net_total, grand_total))
 
-		voucher_items = [i for i in rows if i.get("Voucher No") == uv]
-		percentage = (float(voucher_items[0]["Percentage"] if voucher_items[0]["Percentage"] != "null" else 0.0))
-	
-	 	rowmsg.append(make_si(uv, voucher_no, voucher_items, naming_series, warehouse, letter_head, net_total, grand_total, percentage, returns_map_dict, debit_to, income_ac, cost_center))
+			voucher_items = [i for i in rows if i.get("Voucher No") == uv]
+			percentage = (float(voucher_items[0]["Percentage"] if voucher_items[0]["Percentage"] != "null" else 0.0))
+		
+		 	make_si(uv, voucher_no, voucher_items, naming_series, warehouse, letter_head, net_total, grand_total, percentage, returns_map_dict, debit_to, income_ac, cost_center)
 
-	 	processed_recs += 1
-	 	msgs.append("\n".join(rowmsg))
+		 	processed_recs += 1
 
-	 	print "\n".join(rowmsg), " Rec# ", processed_recs
+		except Exception as e:
+			print "Exception", e, "Args", e.args, "Message", e.message
+
+			rowmsg.append("Problem: {0}".format(e))		
+		
+		msgs.append("\n".join(rowmsg))
 
  	msgs.append("Processed vouchers: {0}".format(processed_recs))
-	print "Processed vouchers: {0}".format(processed_recs)
 
 	return "\n".join(msgs)
+
 
 def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehouse, letter_head, net_total, grand_total, percentage, returns_map_dict, debit_to, income_ac, cost_center):
 	rowmsg = []
@@ -225,7 +378,9 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 	si.customer = voucher_items[0]["Party Name"]
 	si.currency = "INR"
 	si.conversion_rate = 1.0
+	
 	si.selling_price_list = price_list_by_customer_or_net_total(voucher_items[0]["Party Name"], net_total)
+	
 	si.price_list_currency = "INR"
 	si.plc_conversion_rate = 1.0
 	si.base_net_total = net_total
@@ -241,15 +396,19 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 	si.letter_head = letter_head
 	
 	if net_total < 0:
-		si.is_return = "Yes"
-		return_against = [r['Original Invoice'] for r in returns_map_dict["data"] if r["Cancelled Invoice"] == tally_voucher_no]
+		try:
+			si.is_return = "Yes"
+			return_against = [r['Original Invoice'] for r in returns_map_dict["data"] if r["Cancelled Invoice"] == tally_voucher_no]
 
-		if len(return_against) > 0:
-			processed_voucher_no = process_voucher_no(return_against[0])[0]
-			rowmsg.append("Return against: {0}".format(processed_voucher_no))
-			si.return_against = processed_voucher_no
+			if len(return_against) > 0:
+				processed_voucher_no = process_voucher_no(return_against[0])[0]
+				rowmsg.append("Return against: {0}".format(processed_voucher_no))
+				si.return_against = processed_voucher_no
+		except Exception as e:
+			raise Exception("Failed at processing return v.no {0}".format(return_against[0]))
 
-	rowmsg.append("Original Date: {0}, SI Date {1}".format(voucher_items[0]["Date"], si.posting_date))
+			
+	# rowmsg.append("Original Date: {0}, SI Date {1}".format(voucher_items[0]["Date"], si.posting_date))
 
 	for item in voucher_items:
 
@@ -284,12 +443,16 @@ def make_si(tally_voucher_no, voucher_no, voucher_items, naming_series, warehous
 
 	try:
 		si.save()
-		frappe.db.commit()
-		#'"Invoice Saved. ({0})".format(si.name))
-		rowmsg.append("Invoice Saved. ({0})".format(si.name))
+		#rowmsg.append("Invoice Saved. ({0})".format(si.name))
+		rowmsg.append("Saved")
 		rename_doc("Sales Invoice", si.name, voucher_no, force=True)
-		rowmsg.append("Renamed to {0}".format(voucher_no))
+		#rowmsg.append("Renamed to {0}".format(voucher_no))
+		rowmsg.append("Renamed")
+		frappe.db.commit()
 	except Exception as e:
-		rowmsg.append("not saved: {1}".format(voucher_no, e))
+		#rowmsg.append("not saved: {1}, {2}".format(voucher_no, e))
+		rowmsg.append("Not saved: {0}".format(e.message))
+		raise Exception("Not saved: {0}".format(e.message))
+		frappe.db.rollback()
 
-	return "\n".join(rowmsg)
+	return ", ".join(rowmsg)
