@@ -1203,3 +1203,34 @@ def get_spn_discount(discount=None, total_to_compare=None):
 		for item in frappe.get_all("SPN Monthly Discount Item", fields=["*"], filters ={"parent": discount}):
 			if (float(total_to_compare) >= item.slab_from) and (float(total_to_compare) <= item.slab_to): 				 
 				return item.discount_pct
+
+@frappe.whitelist()
+def get_list(dt):
+	doctypes = list(set(frappe.db.sql_list("""select parent
+			from `tabDocField` df where fieldname='naming_series' and 
+			exists(select * from `tabDocPerm` dp, `tabRole` role where dp.role = role.name and dp.parent = df.parent and not role.disabled)""")
+		+ frappe.db.sql_list("""select dt from `tabCustom Field`
+			where fieldname='naming_series'""")))
+
+	prefixes = ""
+	for d in doctypes:
+		if d == dt:
+			options = ""
+			try:
+				options = get_options(d)
+			except frappe.DoesNotExistError:
+				frappe.msgprint('Unable to find DocType {0}'.format(d))
+				continue
+
+			if options:
+				prefixes = prefixes + "\n" + options
+
+	prefixes.replace("\n\n", "\n")
+	prefixes = "\n".join(sorted(prefixes.split()))
+
+	return {
+		"prefixes": prefixes
+	}
+
+def get_options(arg=None):
+	return frappe.get_meta(arg).get_field("naming_series").options				
