@@ -17,11 +17,19 @@ frappe.ui.form.on('SPN User Naming Series Map', {
 		});
 		frappe.call({
 			method: "skynpronaturals_erpnext.api.get_list",
-			args:{"dt":"Purchase Invoice"},
+			args:{"dt":"Purchase Receipt"},
 			callback:function(r){
 				cur_frm.fields_dict.purchase_naming_series_map.grid.get_docfield("naming_series").options = r.message.prefixes;
 				refresh_field();
 				// set_query_doctype(cur_frm,"Purchase Invoice");
+			}
+		});
+		frappe.call({
+			method: "skynpronaturals_erpnext.api.get_list",
+			args:{"dt":"Stock Entry"},
+			callback:function(r){
+				cur_frm.fields_dict.stockentry_naming_series_map.grid.get_docfield("naming_series").options = r.message.prefixes;
+				refresh_field();
 			}
 		});		
     }
