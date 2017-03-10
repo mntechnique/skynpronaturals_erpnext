@@ -1233,4 +1233,10 @@ def get_list(dt):
 	}
 
 def get_options(arg=None):
-	return frappe.get_meta(arg).get_field("naming_series").options				
+	return frappe.get_meta(arg).get_field("naming_series").options		
+
+
+@frappe.whitelist()
+def get_user_field_restrictions(doctype):
+	restriction_map_list = frappe.get_all("SPN Field Restriction Map Item", filters={"parent":frappe.session.user,"dt":doctype}, fields=["field_restriction_map"])
+	return restriction_map_list[0].field_restriction_map
