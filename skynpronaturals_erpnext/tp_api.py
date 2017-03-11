@@ -44,10 +44,10 @@ def create_salon(salon=None):
 
 			if salon_name:
 				spn_salon = frappe.get_doc("SPN Salon", salon_name)
-				if spn_salon.docstatus == 1:
-					return "Cannot update submitted SPN Salon " + str(salon.get("owner_name"))
 			else:
 				spn_salon = frappe.new_doc("SPN Salon")
+
+			if spn_salon:
 				spn_salon.latitude = salon.get("latitude")
 				spn_salon.longitude = salon.get("longitude")
 				spn_salon.boundary= salon.get("boundary")
