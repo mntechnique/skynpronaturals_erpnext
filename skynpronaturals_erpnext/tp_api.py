@@ -12,22 +12,49 @@ def sales_order(so=None):
 
 	if so :
 		so = json.loads(so)  #sales_order
-		if so.get("spn_tp_so_id"):
-			so_name = frappe.db.get_value("Sales Order", {"spn_tp_so_id": so.get("spn_tp_so_id")}, "name")
+		if so.get("username"):
+			so_name = frappe.db.get_value("Sales Order", {"spn_tp_so_id": so.get("username")}, "name")
 
 			if so_name:
+				for x in xrange(1,10):
+				 	print "Existing sO"
+
 				sales_order = frappe.get_doc("Sales Order", so_name)
-				if sales_order.docstatus == 1:
-					return "Cannot update submitted Sales Order " + str(so.get("spn_tp_so_id"))
+				sales_order.customer = so.get("Salon Name")
+				for i in so.get("Order Form"):
+
+					# print "Item for ", i.get("skucode"), [si for si in sales_order.items if si.item_code == i.get("skucode")]
+					so_item = [si for si in sales_order.items if si.item_code == i.get("skucode")]
+
+					so_item[0].item_code = i.get("skucode")
+					so_item[0].item_name = i.get("skuname")
+					so_item[0].qty = i.get("Quantity")
+					so_item[0].rate = i.get("MRP")
+					so_item[0].discount_percentage = i.get("Discount Percentage")
+					so_item[0].amount= i.get("Selling Price")
+
 			else:
 				sales_order = frappe.new_doc("Sales Order")
+				sales_order.customer = so.get("Salon Name")
+				sales_order.delivery_date = so.get("orderdate")
+				sales_order.transaction_date = so.get("orderdate")
+				sales_order.spn_tp_so_id = so.get("username")
+				for i in so.get("Order Form"):
+					sales_order.append("items", {
+						"item_code": i.get("skucode"),
+						"item_name": i.get("skuname"),
+						"qty": i.get("Quantity"),
+						"rate": i.get("MRP"),
+						"discount_percentage" : i.get("Discount Percentage"),
+						"amount": i.get("Selling Price"),
+						"description": i.get("skuname"),
+						"warehouse": "Stores - SPN"
+						})
 
-		sales_order.update(so)
 		sales_order.save(ignore_permissions=True)
 		frappe.db.commit()
 	else:
 		return "Please specify Sales Order"
-
 	return sales_order
 
 
