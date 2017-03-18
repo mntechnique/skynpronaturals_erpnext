@@ -1239,4 +1239,7 @@ def get_options(arg=None):
 @frappe.whitelist()
 def get_user_field_restrictions(doctype):
 	restriction_map_list = frappe.get_all("SPN Field Restriction Map Item", filters={"parent":frappe.session.user,"dt":doctype}, fields=["field_restriction_map"])
-	return restriction_map_list[0].field_restriction_map
+	if len(restriction_map_list) > 0:
+		return restriction_map_list[0].field_restriction_map
+	else:
+		return {}
