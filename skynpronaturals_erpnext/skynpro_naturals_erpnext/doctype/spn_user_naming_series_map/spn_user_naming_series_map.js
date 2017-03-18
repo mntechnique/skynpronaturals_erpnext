@@ -3,7 +3,7 @@
 
 frappe.ui.form.on('SPN User Naming Series Map', {
 	onload: function(frm) {
-        // set_query_doctype(frm);
+
     },
 	refresh: function(frm) {
 		frappe.call({
@@ -11,8 +11,6 @@ frappe.ui.form.on('SPN User Naming Series Map', {
 			args:{"dt":"Sales Invoice"},
 			callback:function(r){
 				cur_frm.fields_dict.sales_naming_series_map.grid.get_docfield("naming_series").options = r.message.prefixes;
-				refresh_field();
-				// set_query_doctype(cur_frm,"Sales Invoice");
 			}
 		});
 		frappe.call({
@@ -20,32 +18,48 @@ frappe.ui.form.on('SPN User Naming Series Map', {
 			args:{"dt":"Purchase Receipt"},
 			callback:function(r){
 				cur_frm.fields_dict.purchase_naming_series_map.grid.get_docfield("naming_series").options = r.message.prefixes;
-				refresh_field();
-				// set_query_doctype(cur_frm,"Purchase Invoice");
 			}
 		});
 		frappe.call({
-			method: "skynpronaturals_erpnext.api.get_list",
+			method: "skynpronaturals_erpnext.api.get_stock_entry_list",
 			args:{"dt":"Stock Entry"},
 			callback:function(r){
-				cur_frm.fields_dict.stockentry_naming_series_map.grid.get_docfield("naming_series").options = r.message.prefixes;
-				refresh_field();
+				cur_frm.fields_dict.stockentry_material_receipt_naming_series_map.grid.get_docfield("naming_series").options = r.message.materialreceipt;
 			}
-		});		
+		});
+		frappe.call({
+			method: "skynpronaturals_erpnext.api.get_stock_entry_list",
+			args:{"dt":"Stock Entry"},
+			callback:function(r){
+				cur_frm.fields_dict.stockentry_material_issue_naming_series_map.grid.get_docfield("naming_series").options = r.message.materialissue;
+			}
+		});
     }
 });
 
-// function set_query_doctype(frm,map_docname){
-//     frm.set_query("map_doctype", "naming_series_map", function() {
-//         return {
-//         	query: "",
-//             filters: [
-//                 ["DocType", "name", "in", [map_docname]]
-//             ]
-//         }
-//     });
-// }
 
-// list = ["D.RM-PREC-.#####","D.RM-PREC-RET-.#####","SINV-D.RM-.#####"];
-// cur_frm.set_df_property("naming_series", "options", list.join("\n"), null, "naming_series_map");
-// frappe.utils.filter_dict(cur_frm.fields_dict["fields"].grid.docfields, {"fieldname": "naming_series"})[0].options = "D.RM-PREC-.#####\nD.RM-PREC-RET-.#####\nSINV-D.RM-.#####";
+// frappe.ui.form.on("SPN User Stock Entry Naming Series Map Item", "map_doctype", function(frm, cdt, cdn){  	
+//   	var child = locals[cdt][cdn]; 
+// 	frappe.call({
+// 		method: "skynpronaturals_erpnext.api.get_stock_entry_list",
+// 		args:{"dt":"Stock Entry"},
+// 		callback:function(r){
+// 			console.log("CHILD", child);
+// 			var map = child.map_doctype;
+// 			//console.log("CHILD naming_series", cur_frm.fields_dict.stockentry_naming_series_map.grid.get_grid_row(child.name));
+// 			if(map == "Stock Entry-Material Receipt"){
+// 				cur_frm.fields_dict.stockentry_naming_series_map.grid.get_grid_row(child.name).docfields[1].options =  r.message.materialreceipt;
+// 				cur_frm.refresh_fields();
+// 				map = null;
+// 			}	
+// 			else if(map == "Stock Entry-Material Issue")
+// 			{
+// 				cur_frm.fields_dict.stockentry_naming_series_map.grid.get_grid_row(child.name).docfields[1].options =  r.message.materialissue;
+// 				cur_frm.refresh_fields();
+// 				console.log("Grid Row Issue", cur_frm.fields_dict.stockentry_naming_series_map.grid.get_grid_row(child.name));
+// 				map = null;
+// 			}
+// 		}
+// 	});
+
+// });

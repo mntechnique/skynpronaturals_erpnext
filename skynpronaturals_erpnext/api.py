@@ -1233,10 +1233,38 @@ def get_list(dt):
 	}
 
 def get_options(arg=None):
-	return frappe.get_meta(arg).get_field("naming_series").options		
+	return frappe.get_meta(arg).get_field("naming_series").options
 
+@frappe.whitelist()
+def get_stock_entry_list(dt):
+	import re
+	se_materialreceipt_list = []
+	se_materialissue_list = []
+
+	prefixes_dict = get_list(dt)
+	prefixes_list = prefixes_dict["prefixes"].split("\n")
+	print prefixes_list
+
+	for series in prefixes_list:
+		se_series = re.search("([A-Z])([A-Z])(S)(-)",series)
+		print "SE Series",se_series
+
+		if se_series == None:
+			se_materialreceipt_list.append(series)
+			print se_materialreceipt_list
+		else:
+			se_materialissue_list.append(se_series.string)
+			print se_materialissue_list	
+
+	return{
+		"materialreceipt": "\n".join(sorted(se_materialreceipt_list)),
+		"materialissue": "\n".join(sorted(se_materialissue_list)) 
+	}
 
 @frappe.whitelist()
 def get_user_field_restrictions(doctype):
 	restriction_map_list = frappe.get_all("SPN Field Restriction Map Item", filters={"parent":frappe.session.user,"dt":doctype}, fields=["field_restriction_map"])
-	return restriction_map_list[0].field_restriction_map
+	if len(restriction_map_list) > 0:
+		return restriction_map_list[0].field_restriction_map
+	else:
+		return []
