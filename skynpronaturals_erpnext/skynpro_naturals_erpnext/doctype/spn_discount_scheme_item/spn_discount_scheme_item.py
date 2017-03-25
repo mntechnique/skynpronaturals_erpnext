@@ -7,4 +7,7 @@ import frappe
 from frappe.model.document import Document
 
 class SPNDiscountSchemeItem(Document):
-	pass
+	def autoname(self):
+		pass
+		#self.name = "DSCI-" + self.parent + "-" +  
+

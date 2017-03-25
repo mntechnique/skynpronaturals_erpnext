@@ -1,0 +1,55 @@
+<div><button class="btn btn-xs btn-default add-discount-item">Add Discount Item</button></div>
+{% if (scheme_details.length == 0) { %}
+	<div class="col-md-12 col-xs-12">
+		<h2 class="text-muted text-center">No items.</h2>
+	</div>
+{% } else { %}
+	<div class="panel panel-default">
+		<table class="table">
+			<tr>
+				<th>ID</th>
+				<th class="text-right">From Amount</th>
+				<th class="text-right">To Amount</th>
+				<th class="text-right">From Qty</th>
+				<th class="text-right">To Qty</th>
+				<th class="text-right">Discount %</th>
+				<th class="text-right">Coupon Amount</th>
+				<th></th>
+			</tr>
+			{% for(var i=0; i<=scheme_details.length - 1; i++) { %}
+				{% var item = scheme_details[i]["item"] %}
+				<tr>
+					<td><a href="desk\#Form/SPN Discount Scheme Item/{%= item.name %}">{%= item.name %}</a></td>
+					<td class="text-right">{%= item.from_amount == 0 ? "-" : item.from_amount %}</td>
+					<td class="text-right">{%= item.to_amount == 0 ? "-" : item.to_amount %}</td>
+					<td class="text-right">{%= item.from_qty == 0 ? "-" : item.from_qty %}</td>
+					<td class="text-right">{%= item.to_qty == 0 ? "-" : item.to_qty %}</td>
+					<td class="text-right">{%= item.discount_pct == 0 ? "-" : item.discount_pct %}</td>
+					<td class="text-right">{%= item.coupon_amount == 0 ? "-" : item.coupon_amount %}</td>
+					<td class="text-center">
+						<button class="btn btn-xs btn-default add-freebie" data-discount-item="{%= item.name %}">Add Freebie</button>
+					</td>
+				</tr>
+				{% if (scheme_details[i]["freebies"].length > 0) { %}
+				<tr>
+					<td colspan="8">
+						<div class="panel panel-default">
+							<div class="panel-heading">
+								Freebies
+							</div>
+							<table class="table">
+								{% for (var j=0; j <= scheme_details[i]["freebies"].length - 1; j++) { %}
+								<tr>
+									<td>{%= scheme_details[i]["freebies"][j].freebie_item %}</td>
+									<td>{%= scheme_details[i]["freebies"][j].freebie_qty %}</td>
+								</tr>
+								{% } %}
+							</table>
+						</div>
+					</td>
+				</tr>
+				{% } %}
+			{% } %}
+		</ul>
+	</div>
+{% } %}
