@@ -134,6 +134,7 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
 															'Sales Invoice-spn_road_permit_no', 'Sales Invoice-cb_payload_info',
                                                             'Warehouse-spn_letterhead',
                                                             'Sales Invoice-sb_transport_and_payload_information',
+                                                            'Sales Invoice-btn_apply_discount_scheme',
                                                             'Purchase Receipt-pr_carrier','Purchase Receipt-pr_mode_of_transport',
                                                             'Purchase Receipt-pr_lr_no','Purchase Receipt-pr_lr_date',
                                                             'Purchase Receipt-pr_no_of_cases','Purchase Receipt-pr_gross_weight',

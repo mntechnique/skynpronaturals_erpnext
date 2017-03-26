@@ -8,8 +8,8 @@ from frappe.model.document import Document
 from frappe import _
 
 class SPNDiscountScheme(Document):
-	def autoname(self):
-	 	self.name = "DSCH-" + frappe.utils.datetime.datetime.strftime(frappe.utils.getdate(self.scheme_month), "%m/%y")
+	# def autoname(self):
+	#  	self.name = "DSCH-" + frappe.utils.datetime.datetime.strftime(frappe.utils.getdate(self.scheme_month), "%m/%y") + "-"
 
 	def validate(self):
 		if self.scheme_month == "":
@@ -43,7 +43,7 @@ class SPNDiscountScheme(Document):
 
 	def get_discount_scheme_items(self):
 		scheme_dtl_list = []
-		discount_items = frappe.get_all("SPN Discount Scheme Item", filters={"discount_scheme":self.name}, fields=["*"])
+		discount_items = frappe.get_all("SPN Discount Scheme Item", filters={"discount_scheme":self.name}, fields=["*"], order_by="creation")
 
 		for di in discount_items:
 			scheme_detail = frappe._dict({

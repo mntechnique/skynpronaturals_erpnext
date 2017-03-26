@@ -81,6 +81,12 @@ function render_discount_items() {
 			
 			wrapper.html(frappe.render_template("discount_scheme_details", r.message))
 			wrapper.find(".add-discount-item").on("click", function() {
+
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["from_amount"].wrapper.hidden = (cur_frm.doc.quantity_or_amount == "Quantity");
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["to_amount"].wrapper.hidden = (cur_frm.doc.quantity_or_amount == "Quantity");
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["from_qty"].wrapper.hidden = (cur_frm.doc.quantity_or_amount == "Amount")
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["to_qty"].wrapper.hidden = (cur_frm.doc.quantity_or_amount == "Amount")
+
 				frappe.discount_scheme["discount_item_dialog"].show();
 			})
 			wrapper.find(".add-freebie").on("click", function() {

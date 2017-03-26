@@ -1268,3 +1268,47 @@ def get_user_field_restrictions(doctype):
 		return restriction_map_list[0].field_restriction_map
 	else:
 		return []
+
+@frappe.whitelist()
+def get_discount_and_freebies(discount_scheme, total_qty, total_amount):
+	dsc = frappe.get_doc("SPN Discount Scheme", discount_scheme)
+
+	if dsc.quantity_or_amount == "Quantity":
+		discount_items = frappe.get_all("SPN Discount Scheme Item", 
+			filters=[
+				["discount_scheme", "=", discount_scheme], 
+				["to_qty", ">=", total_qty],["from_qty", "<=", total_qty]
+			], fields=["*"])
+		
+		freebies = frappe.get_all("SPN Discount Scheme Freebie",
+			filters=[
+				["against_scheme", "=", discount_scheme],
+				["against_scheme_item", "=", discount_items[0].name]
+			], fields=["*"])
+
+		return {
+			"discount_pct": discount_items[0].discount_pct,
+			"freebies": freebies
+		}
+	elif dsc.quantity_or_amount == "Amount":
+		discount_items = frappe.get_all("SPN Discount Scheme Item", 
+			filters=[
+				["discount_scheme", "=", discount_scheme], 
+				["to_amount",">=",total_amount],["from_amount","<=",total_amount]
+			], fields=["*"])
+		
+		freebies = frappe.get_all("SPN Discount Scheme Freebie",
+			filters=[
+				["against_scheme", "=", discount_scheme],
+				["against_scheme_item", "=", discount_items[0].name]
+			], fields=["*"])
+
+		return {
+			"discount_pct": discount_items[0].discount_pct,
+			"freebies": freebies
+		}
+	else:
+		return {
+			"discount_pct": 0.0,
+			"freebies": []
+		}
