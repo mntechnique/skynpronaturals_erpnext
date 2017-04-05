@@ -7,10 +7,16 @@ frappe.discount_scheme = {};
 frappe.ui.form.on('SPN Discount Scheme', {
 	onload: function(frm) {
 		make_discount_item_dialog(frm);
-		render_discount_items();
+		// if (!cur_frm.doc.__islocal) {
+		// 	render_discount_items();
+		// }
 	}, 
 	refresh: function(frm) {
-		render_discount_items();
+		cur_frm.set_df_property("sb_scheme_details", "hidden", cur_frm.doc.__islocal);
+		
+		if (!cur_frm.doc.__islocal) {
+			render_discount_items();
+		}
 	}
 });
 
