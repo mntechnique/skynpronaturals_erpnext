@@ -18,6 +18,7 @@ function make_discount_item_dialog(frm) {
 	frappe.discount_scheme["discount_item_dialog"] = new frappe.ui.Dialog({
 		title: __("Quick Discount Item Entry"),
 		fields: [
+			{fieldtype: "Link", fieldname: "item", options: "Item", label: __("Item")},
 			{fieldtype: "Currency", fieldname: "from_amount", label: __("From Amount")},
 			{fieldtype: "Currency", fieldname: "to_amount", label: __("To Amount")},
 			{fieldtype: "Float", fieldname: "from_qty", label: __("From Quantity")},
@@ -85,16 +86,38 @@ function render_discount_items() {
 			wrapper.html(frappe.render_template("discount_scheme_details", r.message))
 			wrapper.find(".add-discount-item").on("click", function() {
 
-				frappe.discount_scheme["discount_item_dialog"].fields_dict["from_amount"].wrapper.hidden = (cur_frm.doc.quantity_or_amount == "Quantity");
-				frappe.discount_scheme["discount_item_dialog"].fields_dict["to_amount"].wrapper.hidden = (cur_frm.doc.quantity_or_amount == "Quantity");
-				frappe.discount_scheme["discount_item_dialog"].fields_dict["from_qty"].wrapper.hidden = (cur_frm.doc.quantity_or_amount == "Amount")
-				frappe.discount_scheme["discount_item_dialog"].fields_dict["to_qty"].wrapper.hidden = (cur_frm.doc.quantity_or_amount == "Amount")
+				var show_from_to_amount = (cur_frm.doc.quantity_or_amount == "Amount");
+				var show_from_to_qty = (cur_frm.doc.quantity_or_amount == "Quantity" || cur_frm.doc.quantity_or_amount == "Item Quantity");
+				var show_item = (cur_frm.doc.quantity_or_amount == "Item Quantity" || cur_frm.doc.quantity_or_amount == "Item Amount");
+
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["item"].wrapper.hidden = (!show_item);
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["from_amount"].wrapper.hidden = (!show_from_to_amount);
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["to_amount"].wrapper.hidden = (!show_from_to_amount);
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["from_qty"].wrapper.hidden = (!show_from_to_qty);
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["to_qty"].wrapper.hidden = (!show_from_to_qty);
 
 				frappe.discount_scheme["discount_item_dialog"].show();
 			})
 			wrapper.find(".add-freebie").on("click", function() {
 				make_freebie_dialog(cur_frm, $(this).attr('data-discount-item'));
 				frappe.discount_scheme["freebie_dialog"].show();
+			});
+			wrapper.find(".delete-discount-item").on("click", function() {
+				var btn = $(this);
+
+				frappe.call({
+					method: "delete_discount_item",
+					doc: cur_frm.doc,
+					args: {
+						discount_item: btn.attr('data-discount-item')
+					},
+					callback: function(r) {
+						if (r && r.message) {
+							frappe.show_alert(r.message, 5);
+							cur_frm.reload_doc();
+						}
+					}
+				});
 			});
 		}
 	})

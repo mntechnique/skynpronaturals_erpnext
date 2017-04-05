@@ -5,9 +5,10 @@
 	</div>
 {% } else { %}
 	<div class="panel panel-default">
-		<table class="table">
+		<table class="table small">
 			<tr>
 				<th>ID</th>
+				<th class="">Item</th>
 				<th class="text-right">From Amount</th>
 				<th class="text-right">To Amount</th>
 				<th class="text-right">From Qty</th>
@@ -19,7 +20,9 @@
 			{% for(var i=0; i<=scheme_details.length - 1; i++) { %}
 				{% var item = scheme_details[i]["item"] %}
 				<tr>
-					<td><a href="desk\#Form/SPN Discount Scheme Item/{%= item.name %}">{%= item.name %}</a></td>
+					<td><button class="small text-muted btn btn-xs btn-link delete-discount-item" data-discount-item="{%= item.name %}"><i class="fa fa-close"></i></button></span>
+					<a href="desk\#Form/SPN Discount Scheme Item/{%= item.name %}">{%= item.name %}</a></td>
+					<td class="text-right">{%= !item.item ? "-" : item.item %}</td>
 					<td class="text-right">{%= item.from_amount == 0 ? "-" : item.from_amount %}</td>
 					<td class="text-right">{%= item.to_amount == 0 ? "-" : item.to_amount %}</td>
 					<td class="text-right">{%= item.from_qty == 0 ? "-" : item.from_qty %}</td>

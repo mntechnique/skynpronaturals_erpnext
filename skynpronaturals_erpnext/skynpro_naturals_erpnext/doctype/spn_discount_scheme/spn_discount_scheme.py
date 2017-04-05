@@ -17,6 +17,7 @@ class SPNDiscountScheme(Document):
 	
 	def add_discount_item(self, values):
 		dsi = frappe.new_doc("SPN Discount Scheme Item")
+		dsi.item = values.get("item")
 		dsi.from_amount = values.get("from_amount")
 		dsi.to_amount = values.get("to_amount")
 		dsi.from_qty = values.get("from_qty")
@@ -35,9 +36,6 @@ class SPNDiscountScheme(Document):
 		fi.against_scheme_item = discount_item
 		fi.against_scheme = self.name
 			
-		# for x in xrange(1,10):
-		# 	print "Freebie Item: ", fi.freebie_item, "qty: ", fi.freebie_qty
-			
 		fi.insert()
 		frappe.db.commit()
 
@@ -54,8 +52,13 @@ class SPNDiscountScheme(Document):
 
 			print scheme_detail
 		
-
 		return {"scheme_details": scheme_dtl_list}
 
-
+	def delete_discount_item(self, discount_item):
+		try:
+			frappe.delete_doc("SPN Discount Scheme Item", discount_item)
+		except Exception as e:
+			return e.message
+		else:
+			return "Discount item '{0}'' deleted.".format(discount_item)
 
