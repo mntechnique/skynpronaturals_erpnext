@@ -8,6 +8,9 @@ frappe.ui.form.on('SPN Discount Scheme', {
 	onload: function(frm) {
 		make_discount_item_dialog(frm);
 		render_discount_items();
+	}, 
+	refresh: function(frm) {
+		render_discount_items();
 	}
 });
 
@@ -34,7 +37,6 @@ function make_discount_item_dialog(frm) {
 				"values": values
 			},
 			callback: function(r) {
-				console.log("Values", r.message);
 				dialog.clear(); dialog.hide();
 				render_discount_items();
 			}
@@ -43,10 +45,11 @@ function make_discount_item_dialog(frm) {
 }
 
 function make_freebie_dialog(frm, discount_item) {
-	if (!frappe.discount_scheme["freebie_dialog"]) {
+	//if (!frappe.discount_scheme["freebie_dialog"]) {
 		var discount_item_local = discount_item;
+
 		frappe.discount_scheme["freebie_dialog"] = new frappe.ui.Dialog({
-			title: __("Quick Freebie Entry"),
+			title: __("New Freebie for discount item " + discount_item_local),
 			fields: [
 				{fieldtype: "Link", fieldname: "freebie_item", label: __("Freebie Item"), options: "Item"},
 				{fieldtype: "Float", fieldname: "freebie_qty", label: __("Freebie Quantity")}
@@ -69,7 +72,7 @@ function make_freebie_dialog(frm, discount_item) {
 				}
 			})
 		});
-	}
+	//}
 }
 
 function render_discount_items() {
