@@ -25,6 +25,7 @@ function make_discount_item_dialog(frm) {
 		title: __("Quick Discount Item Entry"),
 		fields: [
 			{fieldtype: "Link", fieldname: "item", options: "Item", label: __("Item")},
+			{fieldtype: "Link", fieldname: "item_group", options: "Item Group", label: __("Item Group")},
 			{fieldtype: "Currency", fieldname: "from_amount", label: __("From Amount")},
 			{fieldtype: "Currency", fieldname: "to_amount", label: __("To Amount")},
 			{fieldtype: "Float", fieldname: "from_qty", label: __("From Quantity")},
@@ -93,10 +94,12 @@ function render_discount_items() {
 			wrapper.find(".add-discount-item").on("click", function() {
 
 				var show_from_to_amount = (cur_frm.doc.quantity_or_amount == "Amount");
-				var show_from_to_qty = (cur_frm.doc.quantity_or_amount == "Quantity" || cur_frm.doc.quantity_or_amount == "Item Quantity");
+				var show_from_to_qty = (cur_frm.doc.quantity_or_amount == "Quantity" || cur_frm.doc.quantity_or_amount == "Item Quantity" || cur_frm.doc.quantity_or_amount == "Item Group Quantity");
 				var show_item = (cur_frm.doc.quantity_or_amount == "Item Quantity" || cur_frm.doc.quantity_or_amount == "Item Amount");
+				var show_item_group = (cur_frm.doc.quantity_or_amount == "Item Group Quantity" || cur_frm.doc.quantity_or_amount == "Item Group Amount");
 
 				frappe.discount_scheme["discount_item_dialog"].fields_dict["item"].wrapper.hidden = (!show_item);
+				frappe.discount_scheme["discount_item_dialog"].fields_dict["item_group"].wrapper.hidden = (!show_item_group);
 				frappe.discount_scheme["discount_item_dialog"].fields_dict["from_amount"].wrapper.hidden = (!show_from_to_amount);
 				frappe.discount_scheme["discount_item_dialog"].fields_dict["to_amount"].wrapper.hidden = (!show_from_to_amount);
 				frappe.discount_scheme["discount_item_dialog"].fields_dict["from_qty"].wrapper.hidden = (!show_from_to_qty);

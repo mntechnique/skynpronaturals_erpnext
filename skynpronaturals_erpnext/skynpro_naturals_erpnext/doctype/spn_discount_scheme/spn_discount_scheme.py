@@ -14,6 +14,14 @@ class SPNDiscountScheme(Document):
 	def validate(self):
 		if self.scheme_month == "":
 			frappe.throw(_("Please set Scheme Month."))
+
+	def after_insert(self):
+		if self.quantity_or_amount in ["Item Quantity", "Item Group Quantity"]:
+			#Create campaign for discount scheme. Campaign will be set in Sales Invoice, against which item pricing rules can take effect.
+			cp = frappe.new_doc("Campaign")
+			cp.campaign_name = self.scheme_name
+			cp.insert()
+			frappe.db.commit() 
 	
 	def add_discount_item(self, values):
 		dsi = frappe.new_doc("SPN Discount Scheme Item")
@@ -32,9 +40,8 @@ class SPNDiscountScheme(Document):
 
 		if dsi.item: # or dsi.item_group:
 			pr = frappe.new_doc("Pricing Rule")
-
 			pr.title =  self.scheme_name + "/" + dsi.item
-			
+
 			if dsi.item:
 				pr.apply_on = "Item Code" 
 				pr.item_code = dsi.item
@@ -42,6 +49,8 @@ class SPNDiscountScheme(Document):
 				pr.apply_on = "Item Group" 
 				pr.item_code = dsi.item_group
 
+			pr.applicable_for = "Campaign"
+			pr.campaign = self.scheme_name
 			pr.min_qty = dsi.from_qty
 			pr.max_qty = dsi.to_qty
 			pr.priority = 10
