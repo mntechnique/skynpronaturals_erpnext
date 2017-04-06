@@ -1307,8 +1307,8 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount):
 			"discount_pct": discount_items[0].discount_pct,
 			"freebies": freebies
 		}
+	
 	elif dsc.quantity_or_amount == "Item Quantity":
-
 		discount_scheme_items = frappe.get_all("SPN Discount Scheme Item", filters=[["discount_scheme", "=", discount_scheme]], fields=["*"])
 
 		item_wise_discounts = []
@@ -1323,6 +1323,41 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount):
 				"discount_pct": discount_scheme_item.discount_pct,
 				"freebies": freebies
 			})
+
+		return {"discounts": item_wise_discounts, "campaign": dsc.campaign}
+
+	elif dsc.quantity_or_amount == "Item Group Quantity":
+
+		discount_scheme_items = frappe.get_all("SPN Discount Scheme Item", filters=[["discount_scheme", "=", discount_scheme]], fields=["*"])
+		item_wise_discounts = []
+
+		item_gruppen = [i.item_group for i in items if i.item_group not in item_gruppen]
+
+		
+		
+		# for grupp in item_gruppen:
+		# 	for discount_scheme_item in [i for i in discount_scheme_items if i["item"] == item.get("item_code") and (i["from_qty"] <= item.get("qty") <= i["to_qty"])]:
+		# 		freebies = []
+		# 		for freebie in frappe.get_all("SPN Discount Item Freebies", filters={"discount_scheme": discount_scheme, "against_item": discount_scheme_item.name}, fields=["*"]):
+		# 			freebies.append(freebie)
+
+		# 	item_wise_discounts.append({
+		# 		"item": item.item_code, 
+		# 		"discount_pct": discount_scheme_item.discount_pct,
+		# 		"freebies": freebies
+		# 	})
+
+		#for item in items:
+			# for discount_scheme_item in [i for i in discount_scheme_items if i["item"] == item.get("item_code") and (i["from_qty"] <= item.get("qty") <= i["to_qty"])]:
+			# 	freebies = []
+			# 	for freebie in frappe.get_all("SPN Discount Item Freebies", filters={"discount_scheme": discount_scheme, "against_item": discount_scheme_item.name}, fields=["*"]):
+			# 		freebies.append(freebie)
+
+			# item_wise_discounts.append({
+			# 	"item": item.item_code, 
+			# 	"discount_pct": discount_scheme_item.discount_pct,
+			# 	"freebies": freebies
+			# })
 
 	else:
 		return {
