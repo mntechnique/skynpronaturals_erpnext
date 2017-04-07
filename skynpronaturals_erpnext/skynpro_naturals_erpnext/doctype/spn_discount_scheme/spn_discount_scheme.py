@@ -45,9 +45,9 @@ class SPNDiscountScheme(Document):
 			if dsi.item:
 				pr.apply_on = "Item Code" 
 				pr.item_code = dsi.item
-			elif dsi.item_group:
-				pr.apply_on = "Item Group" 
-				pr.item_code = dsi.item_group
+			# elif dsi.item_group:
+			# 	pr.apply_on = "Item Group" 
+			# 	pr.item_code = dsi.item_group
 
 			pr.applicable_for = "Campaign"
 			pr.campaign = self.scheme_name
@@ -95,3 +95,30 @@ class SPNDiscountScheme(Document):
 		else:
 			return "Discount item '{0}'' deleted.".format(discount_item)
 
+
+
+	def get_item_group_list(self, txt):
+		"""Returns contacts (from autosuggest)"""
+		txt = txt.replace('%', '')
+
+		def get_item_groups():
+			return filter(None, frappe.db.sql_list('select name from `tabItem Group` where name like %s',
+				('%' + txt + '%')))
+		try:
+			out = filter(None, frappe.db.sql_list("""select distinct name from `tabItem Group` 
+				where name like %(txt)s  order by
+				if (locate( %(_txt)s, name), locate( %(_txt)s, name), 99999)""",
+			        {'txt': "%%%s%%" % frappe.db.escape(txt),
+		            '_txt': txt.replace("%", "")
+			        })
+			)
+			if not out:
+				out = get_item_groups()
+		except Exception, e:
+			if e.args[0]==1146:
+				# no Contact, use User
+				out = get_item_groups()
+			else:
+				raise
+
+		return out

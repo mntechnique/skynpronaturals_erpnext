@@ -5,11 +5,58 @@ frappe.provide("erpnext.utils");
 frappe.discount_scheme = {};
 
 frappe.ui.form.on('SPN Discount Scheme', {
+	onload_post_render: function(frm) {
+		//console.log("Post Render");
+		var field = cur_frm.fields_dict["item_group"];
+		
+		$(field.input_area).addClass("ui-front");
+
+			var input = field.$input.get(0);
+			input.awesomplete = new Awesomplete(input, {
+				minChars: 0,
+				maxItems: 99,
+				autoFirst: true,
+				list: [],
+				item: function(item, input) {
+					return $('<li>').text(item.value).get(0);
+				},
+				filter: function(text, input) { return true },
+				replace: function(text) {
+					var before = this.input.value.match(/^.+,\s*|/)[0];
+					this.input.value = before + text + ", ";
+				}
+			});
+			input.field = field;
+
+			field.$input
+				.on('input', function(e) {
+					var term = e.target.value;
+					frappe.call({
+						method:"frappe.client.get_list",
+						args:{
+							doctype:"Item Group",
+							fields: ["name"]
+						},
+						callback: function(r) {
+							if (r.message) {
+								e.target.awesomplete.list = r.message.map(function(d) { return d.name; });
+							}
+						}
+					});
+				})
+				.on('focus', function(e) {
+					$(e.target).trigger('input');
+				})
+	},
 	onload: function(frm) {
 		make_discount_item_dialog(frm);
-		// if (!cur_frm.doc.__islocal) {
-		// 	render_discount_items();
-		// }
+		
+	
+		
+		//console.log("field", field);
+		//console.log("$Input", field$input);
+
+
 	}, 
 	refresh: function(frm) {
 		cur_frm.set_df_property("sb_scheme_details", "hidden", cur_frm.doc.__islocal);

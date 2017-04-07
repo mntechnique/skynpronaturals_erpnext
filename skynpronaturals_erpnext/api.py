@@ -1325,13 +1325,20 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount):
 			})
 
 		return {"discounts": item_wise_discounts, "campaign": dsc.campaign}
+		
+	else:
+		return {
+			"discount_pct": 0.0,
+			"freebies": []
+		}
+	# elif dsc.quantity_or_amount == "Item Group Quantity":
+	# 	discount_scheme_items = frappe.get_all("SPN Discount Scheme Item", filters=[["discount_scheme", "=", discount_scheme]], fields=["*"])
+	# 	item_wise_discounts = []
 
-	elif dsc.quantity_or_amount == "Item Group Quantity":
+	# 	item_groups = [i.item_group for i in items if i.item_group not in item_groups]
 
-		discount_scheme_items = frappe.get_all("SPN Discount Scheme Item", filters=[["discount_scheme", "=", discount_scheme]], fields=["*"])
-		item_wise_discounts = []
+	# 	for item_group in item_groups:
 
-		item_gruppen = [i.item_group for i in items if i.item_group not in item_gruppen]
 
 		
 		
@@ -1358,9 +1365,3 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount):
 			# 	"discount_pct": discount_scheme_item.discount_pct,
 			# 	"freebies": freebies
 			# })
-
-	else:
-		return {
-			"discount_pct": 0.0,
-			"freebies": []
-		}
