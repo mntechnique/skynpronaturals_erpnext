@@ -43,7 +43,9 @@
 							<table class="table">
 								{% for (var j=0; j <= scheme_details[i]["freebies"].length - 1; j++) { %}
 								<tr>
-									<td>{%= scheme_details[i]["freebies"][j].freebie_item %}</td>
+									<td>
+									<a href="desk#Form/SPN%20Discount%20Scheme%20Freebie/{%= scheme_details[i]["freebies"][j].name %}">{%= scheme_details[i]["freebies"][j].freebie_item_name %}
+									</td>
 									<td>{%= scheme_details[i]["freebies"][j].freebie_qty %}</td>
 								</tr>
 								{% } %}
