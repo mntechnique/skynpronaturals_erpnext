@@ -1262,6 +1262,29 @@ def get_stock_entry_list(dt):
 	}
 
 @frappe.whitelist()
+def get_cust_namingseries_pool(dt):
+	prefixes_dict = get_list(dt)
+	prefixes_list = prefixes_dict["prefixes"].split("\n")
+	return prefixes_list
+
+@frappe.whitelist()
+def check_if_distributor(dt,customer_territory,customer_group):
+	import re
+	prefixeslist = []	
+
+	check = re.search("(Distributor)",customer_territory) or re.search("(Distributor)",customer_group)
+	prefixeslist = get_cust_namingseries_pool(dt)
+
+	if check == None:
+		for cust_series in prefixeslist:
+			if re.search("(^A)",cust_series):
+				return cust_series
+	else:
+		for cust_series in prefixeslist:
+			if re.search("(^S)",cust_series):
+				return cust_series
+
+@frappe.whitelist()
 def get_user_field_restrictions(doctype):
 	restriction_map_list = frappe.get_all("SPN Field Restriction Map Item", filters={"parent":frappe.session.user,"dt":doctype}, fields=["field_restriction_map"])
 	if len(restriction_map_list) > 0:
