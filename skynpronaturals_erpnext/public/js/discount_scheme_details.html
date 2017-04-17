@@ -34,25 +34,19 @@
 					</td>
 				</tr>
 				{% if (scheme_details[i]["freebies"].length > 0) { %}
-				<tr>
-					<td colspan="9">
-						<div class="panel panel-default">
-							<div class="panel-heading">
-								Freebies
-							</div>
-							<table class="table">
-								{% for (var j=0; j <= scheme_details[i]["freebies"].length - 1; j++) { %}
-								<tr>
-									<td>
-									<a href="desk#Form/SPN%20Discount%20Scheme%20Freebie/{%= scheme_details[i]["freebies"][j].name %}">{%= scheme_details[i]["freebies"][j].freebie_item_name %}
-									</td>
-									<td>{%= scheme_details[i]["freebies"][j].freebie_qty %}</td>
-								</tr>
-								{% } %}
-							</table>
-						</div>
-					</td>
-				</tr>
+					{% for (var j=0; j <= scheme_details[i]["freebies"].length - 1; j++) { %}
+					<tr>
+						<td colspan="4" style="padding-left: 5%;">
+							<span>(Freebie) <a href="desk#Form/SPN%20Discount%20Scheme%20Freebie/{%= scheme_details[i]["freebies"][j].name %}">{%= scheme_details[i]["freebies"][j].freebie_item_name %}</a>
+							</span>
+						</td>
+						<td colspan="1" class="text-right">
+							{%= scheme_details[i]["freebies"][j].freebie_qty %}
+						</td>
+						<td colspan="4">
+						</td>
+					</tr>
+					{% } %}
 				{% } %}
 			{% } %}
 		</ul>
