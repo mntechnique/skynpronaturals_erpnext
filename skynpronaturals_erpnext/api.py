@@ -1365,7 +1365,7 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items):
 					"discount_pct": discount_scheme_item.discount_pct,
 					"freebies": freebies
 				})
-
+		
 		#return {"discounts": item_wise_discounts, "campaign": dsc.campaign}
 		return item_wise_discounts
 		
