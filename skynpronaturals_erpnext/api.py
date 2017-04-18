@@ -1293,7 +1293,7 @@ def get_user_field_restrictions(doctype):
 		return []
 
 @frappe.whitelist()
-def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items):
+def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, company):
 	dsc = frappe.get_doc("SPN Discount Scheme", discount_scheme)
 
 	if items:
@@ -1319,7 +1319,9 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items):
 
 		return {
 			"discount_pct": discount_pct,
-			"freebies": freebies
+			"freebies": freebies,
+			"expense_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_expense_account"),
+			"income_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_income_account")
 		}
 
 	elif dsc.quantity_or_amount == "Amount":
@@ -1344,7 +1346,9 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items):
 
 		return {
 			"discount_pct": discount_items[0].discount_pct,
-			"freebies": freebies
+			"freebies": freebies,
+			"expense_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_expense_account"),
+			"income_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_income_account")
 		}
 	
 	elif dsc.quantity_or_amount == "Item Quantity":
@@ -1363,7 +1367,9 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items):
 				item_wise_discounts.append({
 					"item": item.get("item_code"), 
 					"discount_pct": discount_scheme_item.discount_pct,
-					"freebies": freebies
+					"freebies": freebies,
+					"expense_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_expense_account"),
+					"income_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_income_account")
 				})
 		
 		#return {"discounts": item_wise_discounts, "campaign": dsc.campaign}
@@ -1408,3 +1414,5 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items):
 			# 	"discount_pct": discount_scheme_item.discount_pct,
 			# 	"freebies": freebies
 			# })
+
+
