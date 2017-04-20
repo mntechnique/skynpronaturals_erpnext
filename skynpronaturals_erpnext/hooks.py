@@ -155,6 +155,7 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             "Purchase Receipt-spn_stock_entry",
                                                             "Stock Entry Detail-spn_rejected_qty",
                                                             "Stock Entry Detail-spn_rejected_warehouse",
+                                                            "Stock Entry Detail-spn_buying_rate",
                                                             "Customer-spn_customer_id","Sales Invoice-spn_monthly_discount", 
                                                             "Sales Order-spn_tp_so_id"]]]},
              {"dt": "Custom Script", "filters":[["name", "in", ['Sales Invoice-Client','Purchase Receipt-Client','Stock Entry-Client','Customer-Client']]]},
