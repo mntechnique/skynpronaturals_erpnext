@@ -9,7 +9,7 @@ from frappe.utils import add_days, nowdate
 from frappe.model.rename_doc import rename_doc
 
 from frappe.utils.pdf import get_pdf
-import pdfkit	
+import pdfkit
 import os
 
 
@@ -75,7 +75,7 @@ def get_naming_series(spn_warehouse, cust_ter, cust_group):
 
 
 	# for x in xrange(1,10):
-	# 	#print "WAREHOUSE: ", spn_warehouse, " CUST_TER: ", cust_ter, "CUST_GROUP: ", cust_group 
+	# 	#print "WAREHOUSE: ", spn_warehouse, " CUST_TER: ", cust_ter, "CUST_GROUP: ", cust_group
 	# 	print warehouse_state.lower()
 
 	# elif warehouse_state.lower() == "west bengal"
@@ -141,9 +141,9 @@ def stock_entry_on_submit(self, method):
 def make_new_stock_entry(self, method):
 	items_with_loss_qty = [i for i in self.get('items') if i.spn_qty_lost > 0.0]
 	if len(items_with_loss_qty) > 0:
-		
+
 		wh_src = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_warehouse")
-			
+
 		if self.spn_linked_transit_entry and self.from_warehouse == wh_src: #and self.to_warehouse != wh_loss:
 			s = frappe.new_doc("Stock Entry")
 			s.posting_date = self.posting_date
@@ -152,13 +152,13 @@ def make_new_stock_entry(self, method):
 			if not self.company:
 				if self.source:
 					self.company = frappe.db.get_value('Warehouse', self.from_warehouse, 'company')
-		
+
 			s.purpose = "Material Issue"# Transfer"
 			s.spn_linked_transit_entry = self.name
 
 			s.company = self.company or erpnext.get_default_company()
 			for item in [item for item in self.items if (item.spn_qty_lost > 0)]:
-				
+
 				s.append("items", {
 					"item_code": item.item_code,
 					"s_warehouse": wh_src,
@@ -181,7 +181,7 @@ def make_new_reject_entry(self, method):
 
 	items_with_loss_qty = [i for i in self.get('items') if i.spn_rejected_qty> 0.0]
 	if len(items_with_loss_qty) > 0:
-		
+
 		wh_src = frappe.db.get_value("SPN Settings","SPN Settings","spn_transit_warehouse")
 
 		if self.spn_linked_transit_entry and self.from_warehouse == wh_src: #and self.to_warehouse != wh_loss:
@@ -192,13 +192,13 @@ def make_new_reject_entry(self, method):
 			if not self.company:
 				if self.source:
 					self.company = frappe.db.get_value('Warehouse', self.from_warehouse, 'company')
-		
+
 			s.purpose = "Material Transfer"
 			s.spn_linked_transit_entry = self.name
 
 			s.company = self.company or erpnext.get_default_company()
 			for item in [item for item in self.items if (item.spn_rejected_qty > 0)]:
-				print "SRC", wh_src, "FROM", item.spn_rejected_warehouse				
+				print "SRC", wh_src, "FROM", item.spn_rejected_warehouse
 				s.append("items", {
 					"item_code": item.item_code,
 					"s_warehouse": wh_src,
@@ -246,14 +246,14 @@ def pr_on_submit(self, method):
 				"serial_no": item.serial_no,
 				'cost_center': item.cost_center,
 			})
-		
+
 		p.save()
 		p.submit()
 
 		self.spn_stock_entry = p.name
 
 		frappe.db.commit()
-		
+
 
 		# #frappe.db.set_value(self.doctype, self.name, "spn_stock_entry", p.name)
 		# frappe.db.commit()
@@ -283,9 +283,9 @@ def se_get_allowed_warehouses(doctype, txt, searchfield, start, page_len, filter
 	if len(wh_map_names) > 0:
 		wh_map = frappe.get_doc("SPN User Warehouse Map", wh_map_names[0])
 		if wh_map and len(wh_map.warehouses) > 0:
-			warehouse_clause = "and name in (" + ",".join([("'" + wh.warehouse + "'") for wh in wh_map.warehouses]) + ")" 
+			warehouse_clause = "and name in (" + ",".join([("'" + wh.warehouse + "'") for wh in wh_map.warehouses]) + ")"
 
-	return frappe.db.sql("""select name, warehouse_name from `tabWarehouse` 
+	return frappe.db.sql("""select name, warehouse_name from `tabWarehouse`
 		where ({key} like %(txt)s or name like %(txt)s) {fcond} {mcond} {whcond}
 		order by
 			if(locate(%(_txt)s, name), locate(%(_txt)s, name), 99999),
@@ -314,7 +314,7 @@ def csv_to_json(path, column_headings_row_idx=1, start_parsing_from_idx=2):
 	#with open('/home/gaurav/Downloads/25a4cbe4397b494a_2016-12-03_2017-01-02.csv', 'rb') as csvfile:
 	with open(csv_path, 'rb') as csvfile:
 		rdr = csv.reader(csvfile, delimiter=str(','), quotechar=str('"'))
-	   
+
 		for row in rdr:
 			file_rows.append(row)
 
@@ -347,14 +347,14 @@ def csv_to_json(path, column_headings_row_idx=1, start_parsing_from_idx=2):
 #------
 # def process_invoices(debit_to="Debtors - SPN", income_ac="Sales - SPN", cost_center="Main - SPN"):
 # 	def process_voucher_no(voucher_no):
-		
+
 
 # 		naming_series = voucher_no[:-4] + "-#####"
-# 		processed_voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5) 
+# 		processed_voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5)
 # 		warehouse = ""
 
 # 		#print "naming series", voucher_no[:-4].lower()
-			
+
 # 		if voucher_no[:-4].lower() in ["bc","bv","bu"]:
 # 			warehouse = "(MAHARASHTRA, Bhiwandi) Bellezimo Professionale Products Pvt. Ltd. C/o. Kotecha Clearing & Forwarding Pvt. Ltd.  - SPN"
 # 		elif voucher_no[:-4].lower() in ["gv","gc", "gu"]:
@@ -397,7 +397,7 @@ def csv_to_json(path, column_headings_row_idx=1, start_parsing_from_idx=2):
 # 		return territory #+ " VAT"
 
 # 	out = []
-	
+
 # 	final_json = csv_to_json(path='/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_si.csv')
 # 	rows = final_json["data"]
 
@@ -409,7 +409,7 @@ def csv_to_json(path, column_headings_row_idx=1, start_parsing_from_idx=2):
 
 # 		net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
 # 		grand_total = sum([
-# 					(float(i.get("Quantity")) * float(i.get("Rate"))) + 
+# 					(float(i.get("Quantity")) * float(i.get("Rate"))) +
 # 					((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
 
 # 		#print "Voucher", uv, "NET TOTAL", net_total, "GRAND TOTAL", grand_total
@@ -426,9 +426,9 @@ def csv_to_json(path, column_headings_row_idx=1, start_parsing_from_idx=2):
 # 			#warehouse = frappe.db.sql("""select name from tabWarehouse where LOWER(state) = "{0}" """.format(voucher_items[0]["State"].lower()), as_dict=True)
 
 # 			#print "WAREHOUSE", warehouse
-					
-# 			newrow.update({"posting_date" : frappe.utils.getdate(voucher_items[0]["Date"]), 
-# 			"company": "Bellezimo Professionale Products Pvt. Ltd.", 
+
+# 			newrow.update({"posting_date" : frappe.utils.getdate(voucher_items[0]["Date"]),
+# 			"company": "Bellezimo Professionale Products Pvt. Ltd.",
 # 			"customer": voucher_items[0]["Party Name"],
 # 			"currency": "INR",
 # 			"conversion_rate": 1.0,
@@ -508,17 +508,17 @@ def csv_to_json(path, column_headings_row_idx=1, start_parsing_from_idx=2):
 # 				out.append(item_row)
 
 # 			processed_recs += 1
-			
+
 
 # 	print "Total records processed:", processed_recs
 # 	return out
-	
+
 # def prepsheet_si():
 # 	import csv
-	
+
 # 	rows = process_invoices()
-# 	column_headings_row = ["name", "naming_series", "posting_date", "company", "customer", "currency", "conversion_rate", "selling_price_list", "price_list_currency", "plc_conversion_rate", "base_net_total", "base_grand_total", "grand_total", "debit_to", "c_form_applicable", "is_return", "due_date", "territory", "taxes_and_charges", "spn_warehouse", 
-# 			"~", "item_code", "item_name", "item_description", "item_qty","item_rate", "amount", "base_rate", "base_amount", "income_account", "cost_center", "price_list_rate", "warehouse", 
+# 	column_headings_row = ["name", "naming_series", "posting_date", "company", "customer", "currency", "conversion_rate", "selling_price_list", "price_list_currency", "plc_conversion_rate", "base_net_total", "base_grand_total", "grand_total", "debit_to", "c_form_applicable", "is_return", "due_date", "territory", "taxes_and_charges", "spn_warehouse",
+# 			"~", "item_code", "item_name", "item_description", "item_qty","item_rate", "amount", "base_rate", "base_amount", "income_account", "cost_center", "price_list_rate", "warehouse",
 # 			"~", "charge_type", "account_head", "description", "row_id", "cost_center", "rate", "tax_amount", "total", "tax_amount_after_discount_amount", "base_tax_amount", "base_total", "base_tax_amount_after_discount_amount"]
 
 # 	with open('/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_si_out.csv', 'w') as csvfile:
@@ -547,7 +547,7 @@ def process_stock_entries():
 		if godown_name == "Guwahati":
 			warehouse = "(ASSAM, Guwahati) Bellezimo Professionale Products Pvt. Ltd. C/o. Siddhi Vinayak Agencies - SPN"
 			reject_warehouse = "Re"
-		elif godown_name == "Bhiwandi":	
+		elif godown_name == "Bhiwandi":
 			warehouse = "(MAHARASHTRA, Bhiwandi) Bellezimo Professionale Products Pvt. Ltd. C/o. Kotecha Clearing & Forwarding Pvt. Ltd.  - SPN"
 		elif godown_name == "Kolkata":
 			warehouse = "(WEST BENGAL, Kolkata) Bellezimo Professionale Products Pvt. Ltd. C/o. Alloy Associates - SPN"
@@ -576,12 +576,12 @@ def process_stock_entries():
 		# for item in stn_items:
 		# 	print item
 		# print "-----"
-		
+
 		newrow_stn = {
 			"name": get_processed_txn_no_and_series(stn_no)["txn_no"],
 			"naming_series": get_processed_txn_no_and_series(stn_no)["naming_series"],
 			"purpose": "Material Issue",
-			"company": "Bellezimo Professionale Products Pvt. Ltd.", 
+			"company": "Bellezimo Professionale Products Pvt. Ltd.",
 			"posting_date": frappe.utils.getdate(stn_items[0]["STN Date"]),
 			"posting_time": frappe.utils.get_time("00:00:00"),
 			"~": "",
@@ -611,13 +611,13 @@ def process_stock_entries():
 			}
 			out.append(item_row)
 
-	
+
 
 		newrow_grn = {
 			"name": get_processed_txn_no_and_series(stn_items[0]["GRN No."])["txn_no"],
 			"naming_series": get_processed_txn_no_and_series(stn_items[0]["GRN No."])["naming_series"],
 			"purpose": "Material Receipt",
-			"company": "Bellezimo Professionale Products Pvt. Ltd.", 
+			"company": "Bellezimo Professionale Products Pvt. Ltd.",
 			"posting_date": frappe.utils.getdate(stn_items[0]["Date"]),
 			"posting_time": frappe.utils.get_time("00:00:00"),
 			"~": "",
@@ -650,7 +650,7 @@ def process_stock_entries():
 		# processed_recs += 1
 		# if processed_recs == 5:
 		# 	break
-	#print processed_recs	
+	#print processed_recs
 	return out
 
 def prepsheet_stock_entry():
@@ -673,11 +673,11 @@ def prepsheet_stock_entry():
 
 # 	def process_voucher_no(voucher_no):
 # 		naming_series = voucher_no[:-4] + "-.#####"
-# 		processed_voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5) 
+# 		processed_voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5)
 # 		warehouse = ""
 
 # 		#print "naming series", voucher_no[:-4].lower()
-			
+
 # 		if voucher_no[:-4].lower() in ["bc","bv","bu"]:
 # 			warehouse = "(MAHARASHTRA, Bhiwandi) Bellezimo Professionale Products Pvt. Ltd. C/o. Kotecha Clearing & Forwarding Pvt. Ltd.  - SPN"
 # 		elif voucher_no[:-4].lower() in ["gv","gc", "gu"]:
@@ -722,7 +722,7 @@ def prepsheet_stock_entry():
 # 			return "Assam CST {0}%".format(tax_pct).replace(".0","")
 # 		else:
 # 			return None
-	
+
 # 	def account_head_by_naming_series(voucher_no):
 # 		if "bc" in voucher_no.lower():
 # 			return "Maharashtra CST - SPN"
@@ -737,7 +737,7 @@ def prepsheet_stock_entry():
 # 		elif "gc" in voucher_no.lower():
 # 			return "Assam CST - SPN"
 # 		else:
-# 			return None	
+# 			return None
 
 # 	def price_list_by_customer_or_net_total(customer, net_total):
 
@@ -775,11 +775,11 @@ def prepsheet_stock_entry():
 # 	returns = []
 
 # 	out = []
-	
+
 # 	final_json = csv_to_json(path=path_to_sheet) #'/home/gaurav/gaurav-work/skynpro/Tally2ERPNext/skynpro_tally_si.csv'
 # 	rows = final_json["data"]
 
-	
+
 # 	returns_map_dict = csv_to_json(path_to_returns_map, 0, 1)
 
 # 	unique_vouchers = list(set([v.get("Voucher No") for v in rows]))
@@ -790,7 +790,7 @@ def prepsheet_stock_entry():
 # 		rowmsg.append("-----")
 # 		net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
 # 		grand_total = sum([
-# 					(float(i.get("Quantity")) * float(i.get("Rate"))) + 
+# 					(float(i.get("Quantity")) * float(i.get("Rate"))) +
 # 					((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
 
 
@@ -802,7 +802,7 @@ def prepsheet_stock_entry():
 # 		voucher_no, naming_series, warehouse = process_voucher_no(uv)
 
 # 		#rowmsg.append("Voucher No: {0}".format(uv))
-# 		print "Voucher No: ", uv, "Processed voucher no: ", voucher_no 
+# 		print "Voucher No: ", uv, "Processed voucher no: ", voucher_no
 
 # 		if frappe.db.get_value("Sales Invoice", {"name": voucher_no}, "name"):
 # 			rowmsg.append("{0} already exists".format(voucher_no))
@@ -848,7 +848,7 @@ def prepsheet_stock_entry():
 # 		si.territory = get_corrected_territory(voucher_items[0]["State_1"])
 # 		si.taxes_and_charges = stc_template_by_naming_series_tax_percentage(voucher_no, percentage)
 # 		si.spn_warehouse = warehouse #frappe.db.get_value("Warehouse", {"state": voucher_items[0]["State"]})
-		
+
 # 		if net_total < 0:
 # 			si.is_return = "Yes"
 # 			return_against = [r['Original Invoice'] for r in returns_map_dict["data"] if r["Cancelled Invoice"] == uv]
@@ -888,7 +888,7 @@ def prepsheet_stock_entry():
 # 			"tax_amount_after_discount_amount": grand_total,
 # 			"base_tax_amount": net_total * percentage,
 # 			"base_total": grand_total,
-# 			"base_tax_amount_after_discount_amount": net_total * (percentage/100)	
+# 			"base_tax_amount_after_discount_amount": net_total * (percentage/100)
 # 		})
 
 # 		try:
@@ -925,7 +925,7 @@ def prepsheet_stock_entry():
 
 # 	# #Print rowmsg
 # 	# with open("/home/frappe/si_log.txt", "w") as txtfile:
-# 	# 	
+# 	#
 # 	# 	txtfile.write(content)
 
 # 	return content
@@ -970,11 +970,11 @@ def prepsheet_stock_entry():
 
 # 	def process_voucher_no(voucher_no):
 # 		naming_series = voucher_no[:-4] + "-.#####"
-# 		processed_voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5) 
+# 		processed_voucher_no = voucher_no[:-4] + "-" + voucher_no[-4:].zfill(5)
 # 		warehouse = ""
 
 # 		#print "naming series", voucher_no[:-4].lower()
-			
+
 # 		if voucher_no[:-4].lower() in ["bc","bv","bu"]:
 # 			warehouse = "(MAHARASHTRA, Bhiwandi) Bellezimo Professionale Products Pvt. Ltd. C/o. Kotecha Clearing & Forwarding Pvt. Ltd.  - SPN"
 # 		elif voucher_no[:-4].lower() in ["gv","gc", "gu"]:
@@ -1019,7 +1019,7 @@ def prepsheet_stock_entry():
 # 			return "Assam CST {0}%".format(tax_pct).replace(".0","")
 # 		else:
 # 			return None
-	
+
 # 	def account_head_by_naming_series(voucher_no):
 # 		if "bc" in voucher_no.lower():
 # 			return "Maharashtra CST - SPN"
@@ -1034,7 +1034,7 @@ def prepsheet_stock_entry():
 # 		elif "gc" in voucher_no.lower():
 # 			return "Assam CST - SPN"
 # 		else:
-# 			return None	
+# 			return None
 
 # 	def price_list_by_customer_or_net_total(customer, net_total):
 
@@ -1067,7 +1067,7 @@ def prepsheet_stock_entry():
 # 		else:
 # 			return territory
 
-	
+
 # 	#Returns map.
 # 	returns_map_dict = csv_to_json(path_to_returns_map, 0, 1)
 
@@ -1076,8 +1076,8 @@ def prepsheet_stock_entry():
 # 	returns = []
 
 # 	out = []
-	
-# 	final_json = csv_to_json(path=path_to_sheet) 
+
+# 	final_json = csv_to_json(path=path_to_sheet)
 # 	rows = final_json["data"]
 
 # 	unique_vouchers = list(set([v.get("Voucher No") for v in rows]))
@@ -1087,7 +1087,7 @@ def prepsheet_stock_entry():
 # 		rowmsg = []
 # 		net_total = sum([float(i.get("Quantity")) * float(i.get("Rate")) for i in rows if i.get("Voucher No") == uv])
 # 		grand_total = sum([
-# 					(float(i.get("Quantity")) * float(i.get("Rate"))) + 
+# 					(float(i.get("Quantity")) * float(i.get("Rate"))) +
 # 					((float(i.get("Quantity")) * float(i.get("Rate"))) * (percentage_by_voucher_no(i.get("Voucher No")) if i.get("Percentage") == "null" else float(i.get("Percentage")) / 100)) for i in rows if i.get("Voucher No") == uv])
 
 
@@ -1098,7 +1098,7 @@ def prepsheet_stock_entry():
 # 		voucher_no, naming_series, warehouse = process_voucher_no(uv)
 
 # 		rowmsg.append("Voucher No: {0}".format(uv))
-# 		print "Voucher No: ", uv, "Processed voucher no: ", voucher_no 
+# 		print "Voucher No: ", uv, "Processed voucher no: ", voucher_no
 
 
 # 		if frappe.db.get_value("Sales Invoice", {"name": voucher_no}, "name"):
@@ -1171,7 +1171,7 @@ def prepsheet_stock_entry():
 # 			"tax_amount_after_discount_amount": grand_total,
 # 			"base_tax_amount": net_total * percentage,
 # 			"base_total": grand_total,
-# 			"base_tax_amount_after_discount_amount": net_total * (percentage/100)	
+# 			"base_tax_amount_after_discount_amount": net_total * (percentage/100)
 # 		})
 
 # 		try:
@@ -1187,7 +1187,7 @@ def prepsheet_stock_entry():
 # 			rowmsg.append("Invoice '{0}' not saved: {1}".format(voucher_no, e))
 
 # 		processed_recs += 1
-		
+
 # 		msgs.append("\n".join(rowmsg))
 
 # 	print "Total records processed:", processed_recs
@@ -1201,13 +1201,13 @@ def prepsheet_stock_entry():
 def get_spn_discount(discount=None, total_to_compare=None):
 	if discount and total_to_compare:
 		for item in frappe.get_all("SPN Monthly Discount Item", fields=["*"], filters ={"parent": discount}):
-			if (float(total_to_compare) >= item.slab_from) and (float(total_to_compare) <= item.slab_to): 				 
+			if (float(total_to_compare) >= item.slab_from) and (float(total_to_compare) <= item.slab_to):
 				return item.discount_pct
 
 @frappe.whitelist()
 def get_list(dt):
 	doctypes = list(set(frappe.db.sql_list("""select parent
-			from `tabDocField` df where fieldname='naming_series' and 
+			from `tabDocField` df where fieldname='naming_series' and
 			exists(select * from `tabDocPerm` dp, `tabRole` role where dp.role = role.name and dp.parent = df.parent and not role.disabled)""")
 		+ frappe.db.sql_list("""select dt from `tabCustom Field`
 			where fieldname='naming_series'""")))
@@ -1254,11 +1254,11 @@ def get_stock_entry_list(dt):
 			print se_materialreceipt_list
 		else:
 			se_materialissue_list.append(se_series.string)
-			print se_materialissue_list	
+			print se_materialissue_list
 
 	return{
 		"materialreceipt": "\n".join(sorted(se_materialreceipt_list)),
-		"materialissue": "\n".join(sorted(se_materialissue_list)) 
+		"materialissue": "\n".join(sorted(se_materialissue_list))
 	}
 
 @frappe.whitelist()
@@ -1270,7 +1270,7 @@ def get_cust_namingseries_pool(dt):
 @frappe.whitelist()
 def check_if_distributor(dt,customer_territory,customer_group):
 	import re
-	prefixeslist = []	
+	prefixeslist = []
 
 	check = re.search("(Distributor)",customer_territory) or re.search("(Distributor)",customer_group)
 	prefixeslist = get_cust_namingseries_pool(dt)
@@ -1300,15 +1300,17 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 		items = json.loads(items)
 
 	if dsc.quantity_or_amount == "Quantity":
+		for x in xrange(1,10):
+			print "quantity", items
 		discount_pct = 0.0
 		freebies = []
 
-		discount_items = frappe.get_all("SPN Discount Scheme Item", 
+		discount_items = frappe.get_all("SPN Discount Scheme Item",
 			filters=[
-				["discount_scheme", "=", discount_scheme], 
+				["discount_scheme", "=", discount_scheme],
 				["to_qty", ">=", total_qty],["from_qty", "<=", total_qty]
 			], fields=["*"])
-		
+
 		if len(discount_items) > 0:
 			discount_pct = discount_items[0].discount_pct
 			freebies = frappe.get_all("SPN Discount Scheme Freebie",
@@ -1325,19 +1327,21 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 		}
 
 	elif dsc.quantity_or_amount == "Amount":
+		for x in xrange(1,10):
+			print "amount", company
 		discount_pct = 0.0
 		freebies = []
 
-		discount_items = frappe.get_all("SPN Discount Scheme Item", 
+		discount_items = frappe.get_all("SPN Discount Scheme Item",
 			filters=[
-				["discount_scheme", "=", discount_scheme], 
+				["discount_scheme", "=", discount_scheme],
 				["to_amount",">=",total_amount],["from_amount","<=",total_amount]
 			], fields=["*"])
-		
+
 		if len(discount_items) > 0:
 			discount_pct = 0.0
 			freebies = []
-			
+
 			freebies = frappe.get_all("SPN Discount Scheme Freebie",
 				filters=[
 					["against_scheme", "=", discount_scheme],
@@ -1350,8 +1354,10 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 			"expense_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_expense_account"),
 			"income_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_income_account")
 		}
-	
+
 	elif dsc.quantity_or_amount == "Item Quantity":
+		for x in xrange(1,10):
+			print "Item Quantity", items
 		discount_scheme_items = frappe.get_all("SPN Discount Scheme Item", filters=[["discount_scheme", "=", discount_scheme]], fields=["*"])
 
 		item_wise_discounts = []
@@ -1365,17 +1371,19 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 					freebies.append(freebie)
 
 				item_wise_discounts.append({
-					"item": item.get("item_code"), 
+					"item": item.get("item_code"),
 					"discount_pct": discount_scheme_item.discount_pct,
 					"freebies": freebies,
 					"expense_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_expense_account"),
 					"income_account": frappe.db.get_value("Company", filters={"name": company}, fieldname="default_income_account")
 				})
-		
+
 		#return {"discounts": item_wise_discounts, "campaign": dsc.campaign}
 		return item_wise_discounts
-		
+
 	else:
+		for x in xrange(1,10):
+			print "else", company
 		return {
 			"discount_pct": 0.0,
 			"freebies": []
@@ -1389,8 +1397,8 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 	# 	for item_group in item_groups:
 
 
-		
-		
+
+
 		# for grupp in item_gruppen:
 		# 	for discount_scheme_item in [i for i in discount_scheme_items if i["item"] == item.get("item_code") and (i["from_qty"] <= item.get("qty") <= i["to_qty"])]:
 		# 		freebies = []
@@ -1398,7 +1406,7 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 		# 			freebies.append(freebie)
 
 		# 	item_wise_discounts.append({
-		# 		"item": item.item_code, 
+		# 		"item": item.item_code,
 		# 		"discount_pct": discount_scheme_item.discount_pct,
 		# 		"freebies": freebies
 		# 	})
@@ -1410,7 +1418,7 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 			# 		freebies.append(freebie)
 
 			# item_wise_discounts.append({
-			# 	"item": item.item_code, 
+			# 	"item": item.item_code,
 			# 	"discount_pct": discount_scheme_item.discount_pct,
 			# 	"freebies": freebies
 			# })
