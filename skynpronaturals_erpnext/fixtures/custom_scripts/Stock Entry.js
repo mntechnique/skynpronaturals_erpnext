@@ -76,9 +76,11 @@ frappe.ui.form.on("Stock Entry", "spn_to_warehouse", function(frm) {
 });
 
 frappe.ui.form.on("Stock Entry Detail", "items_add", function(doc, cdt, cdn) {
-	if(frm.doc.spn_to_warehouse) {
-		var row = locals[cdt][cdn];
-		row.spn_t_warehouse = cur_frm.doc.spn_to_warehouse;
+	console.log("SPN T WAREHOUSE");
+	if(cur_frm.doc.spn_to_warehouse) {
+		console.log("Setting SPN TO WAREHOUSE");
+		frappe.model.set_value(cdt, cdn, "spn_t_warehouse", cur_frm.doc.spn_to_warehouse);
+		cur_frm.refresh_field("items");
 	}
 });
 
@@ -168,7 +170,7 @@ function set_details_from_transit_entry(frm, transit_entry_name) {
 				row.conversion_factor = r.message.items[i].conversion_factor;
 				row.expense_account = r.message.items[i].expense_account;
 				row.cost_center = r.message.items[i].cost_center;
-				row.spn_buying_rate = r.message.item[i].spn_buying_rate;
+				row.spn_buying_rate = r.message.items[i].spn_buying_rate;
 				refresh_field("items");
 			}
 
