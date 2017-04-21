@@ -1300,8 +1300,8 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 		items = json.loads(items)
 
 	if dsc.quantity_or_amount == "Quantity":
-		for x in xrange(1,10):
-			print "quantity", items
+		# for x in xrange(1,10):
+		# 	print "quantity", items
 		discount_pct = 0.0
 		freebies = []
 
@@ -1356,15 +1356,15 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 		}
 
 	elif dsc.quantity_or_amount == "Item Quantity":
-		for x in xrange(1,10):
-			print "Item Quantity", items
+		# for x in xrange(1,10):
+		# 	print "Item Quantity", items
 		discount_scheme_items = frappe.get_all("SPN Discount Scheme Item", filters=[["discount_scheme", "=", discount_scheme]], fields=["*"])
 
 		item_wise_discounts = []
 		for item in items:
 			for discount_scheme_item in [i for i in discount_scheme_items if i["item"] == item.get("item_code") and (i["from_qty"] <= item.get("qty") <= i["to_qty"])]:
 
-				print "DISCOUNT SCHEME ITEM FOR ", item.get("item_code"), " : ", discount_scheme_item.item
+				#print "DISCOUNT SCHEME ITEM FOR ", item.get("item_code"), " : ", discount_scheme_item.item
 
 				freebies = []
 				for freebie in frappe.get_all("SPN Discount Scheme Freebie", filters={"against_scheme": discount_scheme, "against_scheme_item": discount_scheme_item.name}, fields=["*"]):
@@ -1382,8 +1382,8 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 		return item_wise_discounts
 
 	else:
-		for x in xrange(1,10):
-			print "else", company
+		# for x in xrange(1,10):
+		# 	print "else", company
 		return {
 			"discount_pct": 0.0,
 			"freebies": []
