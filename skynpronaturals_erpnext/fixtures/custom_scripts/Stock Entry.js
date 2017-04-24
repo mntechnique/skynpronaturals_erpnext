@@ -9,12 +9,11 @@ frappe.ui.form.on("Stock Entry", "onload", function(frm) {
 
 
 frappe.ui.form.on("Stock Entry Detail", "qty", function(doc,cdt,cdn) {
-	console.log("Qty Set");
 	var row = locals[cdt][cdn];
 	frappe.db.get_value("Item Price", {"item_code":row.item_code,"price_list":"Standard Buying"}, "price_list_rate", function(r) {
-		//console.log("Item price fetched: ", r);
 		if (r && r["price_list_rate"]) {
 			frappe.model.set_value(row.doctype, row.name, "spn_buying_rate", r["price_list_rate"]);
+			frappe.model.set_value(row.doctype, row.name, "spn_buying_amt", r["price_list_rate"] * row["qty"]);
 	   	}
    	});
 });

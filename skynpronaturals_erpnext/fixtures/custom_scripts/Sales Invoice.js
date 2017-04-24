@@ -54,25 +54,25 @@ frappe.ui.form.on("Sales Invoice", {
         }
     },
     "spn_monthly_discount": function(frm) {
-        // frappe.db.get_value("SPN Discount Scheme", cur_frm.doc.spn_monthly_discount, "item_group", function(r) {
-        //     if (r && r.item_group) {
-        //         console.log("Filtering for:", r.item_group);
-        //         //Get list of item groups with single-quotes.
-        //         var retval = r.item_group.trim().split(",");
-        //         var item_groups = []
-        //         $.each(retval, function(idx, val) {  item_groups.push(val.trim());  });
+        frappe.db.get_value("SPN Discount Scheme", cur_frm.doc.spn_monthly_discount, "item_group", function(r) {
+            if (r && r.item_group) {
+                console.log("Filtering for:", r.item_group);
+                //Get list of item groups with single-quotes.
+                var retval = r.item_group.trim().split(",");
+                var item_groups = []
+                $.each(retval, function(idx, val) {  item_groups.push(val.trim());  });
 
-        //         cur_frm.set_query("item_code", "items", function(doc, cdt, cdn) {
-        //             console.log("itemgroups", item_groups);
-        //             return { filters: [["item_group", "in", item_groups]] }
-        //         });
-        //     } else {
-        //         cur_frm.set_query("item_code", "items", function(doc, cdt, cdn) {
-        //             console.log("Clearing")
-        //             return { filters: [] }
-        //         });
-        //     }
-        // });
+                cur_frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+                    console.log("itemgroups", item_groups);
+                    return { filters: [["item_group", "in", item_groups]] }
+                });
+            } else {
+                cur_frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+                    console.log("Clearing")
+                    return { filters: [] }
+                });
+            }
+        });
     },
     "spn_warehouse": function(frm) {
         if(frm.doc.spn_warehouse && frm.doc.territory && frm.doc.customer_group) {
