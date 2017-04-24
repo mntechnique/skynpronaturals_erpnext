@@ -156,6 +156,7 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
                                                             "Stock Entry Detail-spn_rejected_qty",
                                                             "Stock Entry Detail-spn_rejected_warehouse",
                                                             "Stock Entry Detail-spn_buying_rate",
+                                                            "Stock Entry Detail-spn_buying_amt",
                                                             "Customer-spn_customer_id","Sales Invoice-spn_monthly_discount", 
                                                             "Sales Order-spn_tp_so_id"]]]},
              {"dt": "Property Setter", "filters": [["name", "in",["update_stock", "Sales Invoice Item-rate-read_only","Customer-quick_entry","Customer-naming_series-options","Customer-naming_series-default"]]]},
