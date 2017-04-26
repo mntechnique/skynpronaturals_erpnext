@@ -47,32 +47,34 @@ frappe.ui.form.on("Sales Invoice", {
                                 add_freebie(abbr, freebie, r.message.income_account, r.message.expense_account);
                             });
                         }
-                    }               
+                    }
                     cur_frm.refresh_fields();
                 }
             });
         }
     },
     "spn_monthly_discount": function(frm) {
-        // frappe.db.get_value("SPN Discount Scheme", cur_frm.doc.spn_monthly_discount, "item_group", function(r) {
-        //     if (r && r.item_group) {
-        //         console.log("Filtering for:", r.item_group);
-        //         //Get list of item groups with single-quotes.
-        //         var retval = r.item_group.trim().split(",");
-        //         var item_groups = []
-        //         $.each(retval, function(idx, val) {  item_groups.push(val.trim());  });
+        frappe.db.get_value("SPN Discount Scheme", cur_frm.doc.spn_monthly_discount, "item_group", function(r) {
+            if (r && r.item_group) {
+                console.log("Filtering for:", r.item_group);
+                //Get list of item groups with single-quotes.
+                var retval = r.item_group.trim().split(",");
+                var item_groups = []
+                $.each(retval, function(idx, val) {  item_groups.push(val.trim());  });
 
-        //         cur_frm.set_query("item_code", "items", function(doc, cdt, cdn) {
-        //             console.log("itemgroups", item_groups);
-        //             return { filters: [["item_group", "in", item_groups]] }
-        //         });
-        //     } else {
-        //         cur_frm.set_query("item_code", "items", function(doc, cdt, cdn) {
-        //             console.log("Clearing")
-        //             return { filters: [] }
-        //         });
-        //     }
-        // });
+                cur_frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+                    console.log("itemgroups", item_groups);
+                    return { filters: [["item_group", "in", item_groups]] }
+                });
+            } else {
+                cur_frm.set_query("item_code", "items", function(doc, cdt, cdn) {
+                    console.log("Clearing")
+                    return { filters: [] }
+                });
+            }
+        });
+
+        frm.set_df_property("spn_monthly_discount", "read_only", 1);
     },
     "spn_warehouse": function(frm) {
         if(frm.doc.spn_warehouse && frm.doc.territory && frm.doc.customer_group) {
@@ -81,12 +83,12 @@ frappe.ui.form.on("Sales Invoice", {
                 items[i].warehouse = cur_frm.doc.spn_warehouse;
             }
         }
-        
+
 
         //Fetch and set letterhead
         frappe.call({
             method: "skynpronaturals_erpnext.api.get_spn_letter_head",
-            args: {spn_warehouse: frm.doc.spn_warehouse }, 
+            args: {spn_warehouse: frm.doc.spn_warehouse },
             callback: function(r) {
                 if (!r.exc) {
                     cur_frm.set_value("letter_head", r.message);
@@ -95,11 +97,11 @@ frappe.ui.form.on("Sales Invoice", {
                 }
             }
         });
-        
+
         if (cur_frm.doc.spn_warehouse && cur_frm.doc.territory && cur_frm.doc.customer_group) {
             frappe.call({
                 method: "skynpronaturals_erpnext.api.get_naming_series",
-                args: { 
+                args: {
                  "spn_warehouse": frm.doc.spn_warehouse,
                  "cust_ter": frm.doc.territory,
                  "cust_group": frm.doc.customer_group
@@ -111,11 +113,11 @@ frappe.ui.form.on("Sales Invoice", {
                 }
             });
         }
-        
+
         //Fetch terms by territory and set.
         frappe.call({
             method: "skynpronaturals_erpnext.api.get_terms_by_warehouse_state",
-            args: { 
+            args: {
              "spn_warehouse": frm.doc.spn_warehouse
             },
             callback: function(r){
@@ -144,12 +146,12 @@ frappe.ui.form.on("Sales Invoice", {
                 console.log("Field restrictions")
             }
         }
-    })  
+    })
     }
 })
 
 function apply_restrictions(frm, le_map){
-    le_map = JSON.parse(le_map);   
+    le_map = JSON.parse(le_map);
     map_keys = Object.keys(le_map);
 
     if (map_keys) {
@@ -173,10 +175,10 @@ function apply_restrictions(frm, le_map){
                           "name" : filter_value
                         }
                     }
-                });                 
+                });
             }
         }
-    }        
+    }
 }
 
 function add_freebie(abbr, freebie, income_account, expense_account, against_item_code) {
