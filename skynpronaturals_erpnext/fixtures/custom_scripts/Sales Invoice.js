@@ -178,6 +178,7 @@ function apply_restrictions(frm, le_map){
                     });
                 });
             } else if (cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Select") {
+                var filter_value = le_map[map_keys[i]];
                 console.log("Selecttype: ", map_keys[i], filter_value);
                 cur_frm.fields_dict[map_keys[i]].df.options = filter_value
                 refresh_field(map_keys[i]);
