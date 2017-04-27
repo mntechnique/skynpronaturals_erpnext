@@ -127,9 +127,15 @@ frappe.ui.form.on("Sales Invoice", {
             }
         });
     },
+    "onload": function(frm){
+       frappe.db.get_value("Sales Invoice", {"name":frm.doc.return_against}, "naming_series", function(r) {
+                frm.set_value("naming_series", r.naming_series);
+        });
+
+    }
     "onload_post_render": function(frm) {
         console.log("Scheme", cur_frm.doc.spn_monthly_discount);
-        
+
         if ((cur_frm.doc.spn_monthly_discount != "") && (cur_frm.doc.spn_monthly_discount != undefined)) {
             cur_frm.set_df_property("spn_monthly_discount", "read_only", 1);
         }
@@ -165,9 +171,9 @@ function apply_restrictions(frm, le_map){
         for (var i=0; i<map_keys.length; i++) {
             if(cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Table"){
                 $.each(le_map[map_keys[i]], function(key, value) {
-                    
+
                     console.log("Tabletype: ", key, value);
-                    
+
                     var field_name = Object.keys(value)[0];
                     cur_frm.set_query(field_name, map_keys[i], function() {
                         return {
