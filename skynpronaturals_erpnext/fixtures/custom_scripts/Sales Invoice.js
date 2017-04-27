@@ -127,19 +127,24 @@ frappe.ui.form.on("Sales Invoice", {
             }
         });
     },
-    "onload": function(frm){
-       frappe.db.get_value("Sales Invoice", {"name":frm.doc.return_against}, "naming_series", function(r) {
-                frm.set_value("naming_series", r.naming_series);
-        });
-
-    }
     "onload_post_render": function(frm) {
         console.log("Scheme", cur_frm.doc.spn_monthly_discount);
 
         if ((cur_frm.doc.spn_monthly_discount != "") && (cur_frm.doc.spn_monthly_discount != undefined)) {
             cur_frm.set_df_property("spn_monthly_discount", "read_only", 1);
         }
+        
+    },
+    "onload": function(frm) {
+        if (cur_frm.doc.is_return) {  
+            frappe.db.get_value("Sales Invoice", {"name":cur_frm.doc.return_against}, "naming_series", function(r) {
+                console.log("naming_series", r.naming_series);
+                cur_frm.set_value("naming_series", r.naming_series);
+                refresh_field("naming_series");
+            });
+        }
     }
+
 });
 
 frappe.ui.form.on("Sales Invoice Item", "item_code", function(frm, cdt, cdn) {
