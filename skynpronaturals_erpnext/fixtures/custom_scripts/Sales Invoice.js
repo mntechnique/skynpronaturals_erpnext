@@ -128,10 +128,9 @@ frappe.ui.form.on("Sales Invoice", {
         });
     },
     "onload_post_render": function(frm) {
-        // console.log("dsc", cur_frm.doc.spn_monthly_discount);
-        // console.log("dsc", cur_frm.doc.spn_monthly_discount);
+        console.log("Scheme", cur_frm.doc.spn_monthly_discount);
         
-        if (cur_frm.doc.spn_monthly_discount != "") {
+        if ((cur_frm.doc.spn_monthly_discount != "") && (cur_frm.doc.spn_monthly_discount != undefined)) {
             cur_frm.set_df_property("spn_monthly_discount", "read_only", 1);
         }
     }
