@@ -144,16 +144,16 @@ frappe.ui.form.on("Sales Invoice Item", "item_code", function(frm, cdt, cdn) {
 frappe.ui.form.on("Sales Invoice", {
     refresh: function(frm) {
     //get_spn_discount();
-    frappe.call({
-        method:"skynpronaturals_erpnext.api.get_user_field_restrictions",
-        args:{doctype:cur_frm.doc.doctype},
-        callback: function(r){
-            if(r.message) {
-                //apply_restrictions(cur_frm,r.message)
-                console.log("Field restrictions")
+        frappe.call({
+            method:"skynpronaturals_erpnext.api.get_user_field_restrictions",
+            args:{doctype:cur_frm.doc.doctype},
+            callback: function(r){
+                console.log("Field restrictions", r);
+                if(r.message.length > 0) {
+                    apply_restrictions(cur_frm,r.message)
+                }
             }
-        }
-    })
+        })
     }
 })
 
@@ -165,6 +165,9 @@ function apply_restrictions(frm, le_map){
         for (var i=0; i<map_keys.length; i++) {
             if(cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Table"){
                 $.each(le_map[map_keys[i]], function(key, value) {
+                    
+                    console.log("Tabletype: ", key, value);
+                    
                     var field_name = Object.keys(value)[0];
                     cur_frm.set_query(field_name, map_keys[i], function() {
                         return {
@@ -174,8 +177,13 @@ function apply_restrictions(frm, le_map){
                         }
                     });
                 });
-            } else{
+            } else if (cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Select") {
+                console.log("Selecttype: ", map_keys[i], filter_value);
+                cur_frm.fields_dict[map_keys[i]].df.options = filter_value
+                refresh_field(map_keys[i]);
+            } else {
                 var filter_value = le_map[map_keys[i]];
+                console.log("Tabletype: ", map_keys[i], filter_value);
                 cur_frm.set_query(map_keys[i], function() {
                     return {
                         filters: {
