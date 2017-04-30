@@ -8,4 +8,4 @@ from frappe.model.document import Document
 
 class TechnoPurpleIntegrationSettings(Document):
 	def on_update(self):
-		frappe.add_version(self)
+		pass# frappe.add_version(self)

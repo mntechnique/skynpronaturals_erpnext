@@ -132,7 +132,18 @@ frappe.ui.form.on("Sales Invoice", {
                 frm.set_value("naming_series", r.naming_series);
         });
 
-    }
+    },
+    "validate": function(frm){
+        frappe.call({
+            method:"skynpronaturals_erpnext.api.round_up_total",
+            args:{
+                "total": frm.doc.grand_total
+            },
+            callback: function(r){
+                cur_frm.set_value("total",r.message);
+            }
+        });
+    },
     "onload_post_render": function(frm) {
         console.log("Scheme", cur_frm.doc.spn_monthly_discount);
 

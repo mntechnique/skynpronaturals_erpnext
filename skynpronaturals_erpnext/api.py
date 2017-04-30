@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 import frappe, json
 import frappe
+import math
 from frappe import _
 from frappe.desk.reportview import get_match_cond
 from erpnext.controllers.queries import get_filters_cond
@@ -881,3 +882,10 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 			# })
 
 
+@frappe.whitelist()
+def round_up_total(grand_total):
+	total = math.ceil(float(grand_total))
+	for x in xrange(1,10):
+		print "gggg", total
+
+	return total
