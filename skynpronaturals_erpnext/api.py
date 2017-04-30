@@ -8,7 +8,7 @@ from frappe.desk.reportview import get_match_cond
 from erpnext.controllers.queries import get_filters_cond
 from frappe.utils import add_days, nowdate
 from frappe.model.rename_doc import rename_doc
-
+from erpnext.setup.utils import get_company_currency
 from frappe.utils.pdf import get_pdf
 import pdfkit
 import os
@@ -884,8 +884,12 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 
 @frappe.whitelist()
 def round_up_total(grand_total):
+	from frappe.utils import money_in_words
+	company_currency = get_company_currency(frappe.defaults.get_defaults().company)
 	total = math.ceil(float(grand_total))
+	money_in_words= money_in_words(total,company_currency)
 	for x in xrange(1,10):
 		print "gggg", total
+		print "company", money_in_words
 
 	return total

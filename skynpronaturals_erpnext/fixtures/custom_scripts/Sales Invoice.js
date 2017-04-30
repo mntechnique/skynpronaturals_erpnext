@@ -127,23 +127,21 @@ frappe.ui.form.on("Sales Invoice", {
             }
         });
     },
-    "onload": function(frm){
-       frappe.db.get_value("Sales Invoice", {"name":frm.doc.return_against}, "naming_series", function(r) {
-                frm.set_value("naming_series", r.naming_series);
-        });
 
-    },
-    "validate": function(frm){
+   "validate": function(frm){
         frappe.call({
             method:"skynpronaturals_erpnext.api.round_up_total",
             args:{
-                "total": frm.doc.grand_total
+                "grand_total": frm.doc.grand_total
             },
             callback: function(r){
-                cur_frm.set_value("total",r.message);
+                console.log(r.message);
+                cur_frm.set_value("spn_rounded_total",r.message);
+                frm.refresh();
             }
         });
     },
+
     "onload_post_render": function(frm) {
         console.log("Scheme", cur_frm.doc.spn_monthly_discount);
 
@@ -182,9 +180,6 @@ function apply_restrictions(frm, le_map){
         for (var i=0; i<map_keys.length; i++) {
             if(cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Table"){
                 $.each(le_map[map_keys[i]], function(key, value) {
-
-                    console.log("Tabletype: ", key, value);
-
                     var field_name = Object.keys(value)[0];
                     cur_frm.set_query(field_name, map_keys[i], function() {
                         return {
@@ -195,13 +190,10 @@ function apply_restrictions(frm, le_map){
                     });
                 });
             } else if (cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Select") {
-                var filter_value = le_map[map_keys[i]];
-                console.log("Selecttype: ", map_keys[i], filter_value);
                 cur_frm.fields_dict[map_keys[i]].df.options = filter_value
                 refresh_field(map_keys[i]);
             } else {
                 var filter_value = le_map[map_keys[i]];
-                console.log("Tabletype: ", map_keys[i], filter_value);
                 cur_frm.set_query(map_keys[i], function() {
                     return {
                         filters: {
