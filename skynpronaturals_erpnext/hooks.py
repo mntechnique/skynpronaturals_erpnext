@@ -132,6 +132,7 @@ fixtures = [{"dt": "Custom Field", "filters":[["name", "in", ['Sales Invoice-spn
 															'Sales Invoice-spn_lr_no', 'Sales Invoice-spn_lr_date',
 															'Sales Invoice-spn_no_of_cases', 'Sales Invoice-spn_consignment_weight',
 															'Sales Invoice-spn_road_permit_no', 'Sales Invoice-cb_payload_info',
+                                                            'Sales Invoice-spn_rounded_total', 'Sales Invoice-spn_rounded_total_in_words',
                                                             'Warehouse-spn_letterhead',
                                                             'Sales Invoice-sb_transport_and_payload_information',
                                                             'Sales Invoice-btn_apply_discount_scheme',
