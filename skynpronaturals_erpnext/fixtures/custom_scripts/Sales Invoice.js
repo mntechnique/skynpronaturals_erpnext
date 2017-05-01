@@ -147,10 +147,14 @@ frappe.ui.form.on("Sales Invoice", {
 
 });
 
-frappe.ui.form.on("Sales Invoice Item", "item_code", function(frm, cdt, cdn) {
-    var d = locals[cdt][cdn];
-    d["warehouse"] = cur_frm.doc.spn_warehouse;
+frappe.ui.form.on("Sales Invoice Item", {
+    "item_code": function(frm, cdt, cdn) {
+        var d = locals[cdt][cdn];
+        d["warehouse"] = cur_frm.doc.spn_warehouse;
+
+    }
 });
+
 
 frappe.ui.form.on("Sales Invoice", {
     refresh: function(frm) {
@@ -164,7 +168,7 @@ frappe.ui.form.on("Sales Invoice", {
                     apply_restrictions(cur_frm,r.message)
                 }
             }
-        })
+        });
     }
 })
 
@@ -216,34 +220,52 @@ function add_freebie(abbr, freebie, income_account, expense_account, against_ite
     d.amount = 0.0;
 }
 
-frappe.ui.form.on("Sales Invoice Item", {
-    items_add: function(doc, cdt, cdn) {
-        console.log("tested");
-    },
-    items_on_form_rendered: function(doc, grid_row) {
-        console.log("tested form");
-    },
+// frappe.ui.form.on("Sales Invoice Item", {
+//     items_add: function(doc, cdt, cdn) {
+//         console.log("tested");
+//     },
+//     items_on_form_rendered: function(doc, grid_row) {
+//         console.log("tested form");
+//     },
+// });
 
+// function remove_freebie(freebie){
+//     for(var i = 0; i<cur_frm.doc.items.length;i++){
+//         console.log("remove", cur_frm.doc.items[i].item_code, freebie.freebie_item);
 
-});
+//         if(cur_frm.doc.items[i].item_code == freebie.freebie_item && cur_frm.doc.items[i].amount == 0) {
 
-function remove_freebie(freebie){
-    for(var i = 0; i<cur_frm.doc.items.length;i++){
-        console.log("remove", cur_frm.doc.items[i].item_code, freebie.freebie_item);
+//             /*cur_frm.doc.items[i].splice(freebie_item,)*/
+//             //cur_frm.doc.items.splice(i, 1);
+//             /*cur_frm.doc.items.pop();*/
+//             //delete cur_frm.doc.items[i];
+//         }
+//     }
+//    /* $.each(cur_frm.doc.items, function(index, item){
+//         if (item.amount == 0){
+//             //console.log("Removing ", item.item_code, "Freebie", freebie.freebie_item)
+//             cur_frm.doc.items.splice(index, 1);
+//             return false;
+//         }
+//     });*/
+// }
 
-        if(cur_frm.doc.items[i].item_code == freebie.freebie_item && cur_frm.doc.items[i].amount == 0) {
+// function update_rounded_up_total(frm) {
+//     var f = frm;
 
-            /*cur_frm.doc.items[i].splice(freebie_item,)*/
-            //cur_frm.doc.items.splice(i, 1);
-            /*cur_frm.doc.items.pop();*/
-            //delete cur_frm.doc.items[i];
-        }
-    }
-   /* $.each(cur_frm.doc.items, function(index, item){
-        if (item.amount == 0){
-            //console.log("Removing ", item.item_code, "Freebie", freebie.freebie_item)
-            cur_frm.doc.items.splice(index, 1);
-            return false;
-        }
-    });*/
-}
+//     frappe.call({
+//         method:"skynpronaturals_erpnext.api.round_up_total",
+//         args:{
+//             grand_total: f.doc.grand_total,
+//             company: f.doc.company  
+//         },
+//         callback: function(r){
+//             if (r) {
+//                 f.set_value("spn_rounded_total", r.message.rounded_up_total);
+//                 f.set_value("spn_rounded_total_in_words", r.message.rounded_up_total_in_words);
+                
+//                 f.refresh_fields();
+//             }
+//         }
+//     });
+// }

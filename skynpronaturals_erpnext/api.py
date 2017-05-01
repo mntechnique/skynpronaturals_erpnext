@@ -2,13 +2,12 @@
 from __future__ import unicode_literals
 import frappe, json
 import frappe
-import math
 from frappe import _
 from frappe.desk.reportview import get_match_cond
 from erpnext.controllers.queries import get_filters_cond
 from frappe.utils import add_days, nowdate
 from frappe.model.rename_doc import rename_doc
-from erpnext.setup.utils import get_company_currency
+
 from frappe.utils.pdf import get_pdf
 import pdfkit
 import os
@@ -24,7 +23,13 @@ def validate_sales_invoice(self, method):
 	if not self.naming_series:
 		self.naming_series = get_naming_series(spn_warehouse,cust_ter,cust_group)
 
-	#Disallow back-dated sales invoices
+
+	rounded_up_total_dict= round_up_total(self.grand_total, self.company)
+
+	self.spn_rounded_total = rounded_up_total_dict["rounded_up_total"]
+	self.spn_rounded_total_in_words = rounded_up_total_dict["rounded_up_total_in_words"]
+
+	# #Disallow back-dated sales invoices
 	# if frappe.utils.getdate(self.posting_date) < frappe.utils.datetime.date.today():
 	# 	frappe.throw("Please set the posting date to either today's date or a future date.<br> Back-dated invoices are not allowed.")
 
@@ -883,13 +888,16 @@ def get_discount_and_freebies(discount_scheme, total_qty, total_amount, items, c
 
 
 @frappe.whitelist()
-def round_up_total(grand_total):
+def round_up_total(grand_total, company):
 	from frappe.utils import money_in_words
-	company_currency = get_company_currency(frappe.defaults.get_defaults().company)
-	total = math.ceil(float(grand_total))
-	money_in_words= money_in_words(total,company_currency)
-	for x in xrange(1,10):
-		print "gggg", total
-		print "company", money_in_words
+	import math
 
-	return total
+	company_currency = frappe.db.get_value('Company', company, 'default_currency')
+	total = math.ceil(float(grand_total))
+	
+	money_in_words= money_in_words(total,company_currency)
+	
+	return {
+		"rounded_up_total": total, 
+		"rounded_up_total_in_words": money_in_words
+	}
