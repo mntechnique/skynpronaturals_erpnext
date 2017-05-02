@@ -164,7 +164,7 @@ frappe.ui.form.on("Sales Invoice", {
             args:{doctype:cur_frm.doc.doctype},
             callback: function(r){
                 console.log("Field restrictions", r);
-                if(r.message.length > 0) {
+                if(r.message && r.message.length > 0) {
                     apply_restrictions(cur_frm,r.message)
                 }
             }
@@ -219,53 +219,3 @@ function add_freebie(abbr, freebie, income_account, expense_account, against_ite
     d.expense_account = expense_account;
     d.amount = 0.0;
 }
-
-// frappe.ui.form.on("Sales Invoice Item", {
-//     items_add: function(doc, cdt, cdn) {
-//         console.log("tested");
-//     },
-//     items_on_form_rendered: function(doc, grid_row) {
-//         console.log("tested form");
-//     },
-// });
-
-// function remove_freebie(freebie){
-//     for(var i = 0; i<cur_frm.doc.items.length;i++){
-//         console.log("remove", cur_frm.doc.items[i].item_code, freebie.freebie_item);
-
-//         if(cur_frm.doc.items[i].item_code == freebie.freebie_item && cur_frm.doc.items[i].amount == 0) {
-
-//             /*cur_frm.doc.items[i].splice(freebie_item,)*/
-//             //cur_frm.doc.items.splice(i, 1);
-//             /*cur_frm.doc.items.pop();*/
-//             //delete cur_frm.doc.items[i];
-//         }
-//     }
-//    /* $.each(cur_frm.doc.items, function(index, item){
-//         if (item.amount == 0){
-//             //console.log("Removing ", item.item_code, "Freebie", freebie.freebie_item)
-//             cur_frm.doc.items.splice(index, 1);
-//             return false;
-//         }
-//     });*/
-// }
-
-// function update_rounded_up_total(frm) {
-//     var f = frm;
-
-//     frappe.call({
-//         method:"skynpronaturals_erpnext.api.round_up_total",
-//         args:{
-//             grand_total: f.doc.grand_total,
-//             company: f.doc.company  
-//         },
-//         callback: function(r){
-//             if (r) {
-//                 f.set_value("spn_rounded_total", r.message.rounded_up_total);
-//                 f.set_value("spn_rounded_total_in_words", r.message.rounded_up_total_in_words);
-                
-//                 f.refresh_fields();
-//             }
-//         }
-//     });
-// }
