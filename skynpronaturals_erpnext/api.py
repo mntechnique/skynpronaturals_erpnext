@@ -86,10 +86,11 @@ def get_terms_by_warehouse_state(spn_warehouse):
 	warehouse_state = frappe.db.get_value("Warehouse", spn_warehouse, "state")
 	existing_territory = frappe.db.get_value("Territory", warehouse_state)
 
-	if not existing_territory:
-		frappe.throw("Could not find corresponding Territory for Warehouse State {0}".format(warehouse_state))
-
-	tc_name = frappe.db.get_value("Terms and Conditions", {"spn_territory": warehouse_state})
+	# if not existing_territory:
+	# 	frappe.throw("Could not find corresponding Territory for Warehouse State {0}".format(warehouse_state))
+	tc_name = ""
+	if existing_territory:
+		tc_name = frappe.db.get_value("Terms and Conditions", {"spn_territory": warehouse_state})		
 
 	# frappe.msgprint({"Warehouse State": warehouse_state, "Existing Territory": existing_territory, "TC Name": tc_name})
 	return tc_name
