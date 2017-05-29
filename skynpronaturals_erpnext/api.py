@@ -82,38 +82,38 @@ def get_naming_series(spn_warehouse, cust_ter, cust_group):
 
 @frappe.whitelist()
 def get_terms_by_warehouse_state(spn_warehouse):
+	wh_terms_map = {
+		"assam": "Assam VAT Invoice Terms And Conditions",
+		"maharashtra": "Maharashtra VAT Invoice Terms And Conditions",
+		"west bengal": "West Bengal VAT Invoice Terms And Conditions"
+	}
 
-	warehouse_state = frappe.db.get_value("Warehouse", spn_warehouse, "state")
-	existing_territory = frappe.db.get_value("Territory", warehouse_state)
+	wh_state = spn_warehouse[1:spn_warehouse.index(",")].lower()
 
-	# if not existing_territory:
-	# 	frappe.throw("Could not find corresponding Territory for Warehouse State {0}".format(warehouse_state))
-	tc_name = ""
-	if existing_territory:
-		tc_name = frappe.db.get_value("Terms and Conditions", {"spn_territory": warehouse_state})		
+	print ("WH State", wh_state)
 
-	# frappe.msgprint({"Warehouse State": warehouse_state, "Existing Territory": existing_territory, "TC Name": tc_name})
-	return tc_name
+	if wh_state in wh_terms_map:
+		return wh_terms_map[wh_state]
+	else:
+		return ""
 
 
 @frappe.whitelist()
 def get_spn_letter_head(spn_warehouse):
-	return frappe.db.get_value("Warehouse",spn_warehouse,"spn_letterhead")
-	# if spn_warehouse == "Bellezimo Professionale Products Pvt. Ltd. - SPN":
-	#     if cust_group=="Assam Registered Distributor" and cust_ter == "Assam":
-	#         return "GV-.#####"
-	#     elif cust_group=="Assam Unregistered Distributor":
-	#         return "GU-.#####"
-	#     else:
-	#         return "GC-.#####"
-	# elif spn_warehouse == "Bellezimo Professionale Products Pvt. Ltd. C/o. Kotecha Clearing & Forwarding Pvt. Ltd.  - SPN":
-	#     if cust_group=="Maharashtra Registered Distributor" and cust_ter == "Maharashtra":
-	#         return "BV-.#####"
-	#     elif cust_group=="Maharashtra Unregistered Distributor":
-	#         return "BU-.#####"
-	#     else:
-	#         return "BC-.#####"
+	wh_lh_map = {
+		"assam": "(Assam) Bellezimo Professionale Products Private Limited",
+		"maharashtra": "(Maharashtra) Bellezimo Professionale Products Private Limited",
+		"west bengal": "(West Bengal) Bellezimo Professionale Products Private Limited"
+	}
 
+	wh_state = spn_warehouse[1:spn_warehouse.index(",")].lower()
+
+	print ("WH State", wh_state)
+
+	if wh_state in wh_lh_map:
+		return wh_lh_map[wh_state]
+	else:
+		return ""
 
 
 @frappe.whitelist()
