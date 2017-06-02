@@ -88,14 +88,16 @@ def get_terms_by_warehouse_state(spn_warehouse):
 		"west bengal": "West Bengal VAT Invoice Terms And Conditions"
 	}
 
-	wh_state = spn_warehouse[1:spn_warehouse.index(",")].lower()
-
-	print ("WH State", wh_state)
-
-	if wh_state in wh_terms_map:
-		return wh_terms_map[wh_state]
-	else:
+	wh_state = ""
+	try:
+		wh_state = spn_warehouse[1:spn_warehouse.index(",")].lower()
+	except Exception as e:
 		return ""
+	else:
+		if wh_state in wh_terms_map:
+			return wh_terms_map[wh_state]
+		else:
+			return ""
 
 
 @frappe.whitelist()
@@ -106,14 +108,15 @@ def get_spn_letter_head(spn_warehouse):
 		"west bengal": "(West Bengal) Bellezimo Professionale Products Private Limited"
 	}
 
-	wh_state = spn_warehouse[1:spn_warehouse.index(",")].lower()
-
-	print ("WH State", wh_state)
-
-	if wh_state in wh_lh_map:
-		return wh_lh_map[wh_state]
-	else:
+	try:
+		wh_state = spn_warehouse[1:spn_warehouse.index(",")].lower()
+	except Exception as e:
 		return ""
+	else:
+		if wh_state in wh_lh_map:
+			return wh_lh_map[wh_state]
+		else:
+			return ""
 
 
 @frappe.whitelist()
