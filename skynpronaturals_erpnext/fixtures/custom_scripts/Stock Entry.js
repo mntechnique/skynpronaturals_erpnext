@@ -235,17 +235,20 @@ function set_transit_warehouse_filter(frm) {
 	});
 }
 
-function apply_restrictions(frm, le_map){
-    
+function apply_restrictions(frm, le_map){    
     le_map = JSON.parse(le_map);   
     map_keys = Object.keys(le_map);
+    console.log("LE Map", le_map);
 
     if (map_keys) {
         for (var i=0; i<map_keys.length; i++) {
             if(cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Table"){
                 $.each(le_map[map_keys[i]], function(key, value) {
+                	console.log("lemap mapkeys i:", le_map[map_keys[i]]);
                     var field_name = Object.keys(value)[0];
+      				console.log("Field: ", field_name, " Value: ", value);
                     cur_frm.set_query(field_name, map_keys[i], function() {
+						console.log("Table field", value[field_name]);
                         return {
                             filters: {
                               "name" : value[field_name]
@@ -253,16 +256,20 @@ function apply_restrictions(frm, le_map){
                         }
                     });
                 });
-            } else{
+            } else if (cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Select") {
+                cur_frm.fields_dict[map_keys[i]].df.options = le_map[map_keys[i]].join("\n");
+                refresh_field(map_keys[i]);
+            } else {
                 var filter_value = le_map[map_keys[i]];
                 cur_frm.set_query(map_keys[i], function() {
-                    return {
+                	console.log("Normal field", filter_value);
+                	return {
                         filters: {
                           "name" : filter_value
                         }
                     }
-                });                 
+                });
             }
         }
-    }        
+    }
 }

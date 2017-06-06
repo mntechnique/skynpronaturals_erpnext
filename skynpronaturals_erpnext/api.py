@@ -88,6 +88,9 @@ def get_terms_by_warehouse_state(spn_warehouse):
 		"west bengal": "West Bengal VAT Invoice Terms And Conditions"
 	}
 
+	if (not spn_warehouse) or (spn_warehouse == ""):
+		return ""
+
 	wh_state = ""
 	try:
 		wh_state = spn_warehouse[1:spn_warehouse.index(",")].lower()
@@ -107,6 +110,9 @@ def get_spn_letter_head(spn_warehouse):
 		"maharashtra": "(Maharashtra) Bellezimo Professionale Products Private Limited",
 		"west bengal": "(West Bengal) Bellezimo Professionale Products Private Limited"
 	}
+
+	if (not spn_warehouse) or (spn_warehouse == ""):
+		return ""
 
 	try:
 		wh_state = spn_warehouse[1:spn_warehouse.index(",")].lower()
