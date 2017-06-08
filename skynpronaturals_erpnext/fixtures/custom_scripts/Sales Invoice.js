@@ -136,6 +136,17 @@ frappe.ui.form.on("Sales Invoice", {
 
     },
     "onload": function(frm) {
+        frappe.call({
+            method:"skynpronaturals_erpnext.api.get_user_field_restrictions",
+            args:{doctype:cur_frm.doc.doctype},
+            callback: function(r){
+                console.log("Field restrictions", r);
+                if(r.message && r.message.length > 0) {
+                    apply_restrictions(cur_frm,r.message)
+                }
+            }
+        });
+
         if (cur_frm.doc.is_return) {
             frappe.db.get_value("Sales Invoice", {"name":cur_frm.doc.return_against}, "naming_series", function(r) {
                 console.log("naming_series", r.naming_series);
@@ -143,6 +154,7 @@ frappe.ui.form.on("Sales Invoice", {
                 refresh_field("naming_series");
             });
         }
+
     }
 
 });
@@ -159,52 +171,9 @@ frappe.ui.form.on("Sales Invoice Item", {
 frappe.ui.form.on("Sales Invoice", {
     refresh: function(frm) {
     //get_spn_discount();
-        frappe.call({
-            method:"skynpronaturals_erpnext.api.get_user_field_restrictions",
-            args:{doctype:cur_frm.doc.doctype},
-            callback: function(r){
-                console.log("Field restrictions", r);
-                if(r.message && r.message.length > 0) {
-                    apply_restrictions(cur_frm,r.message)
-                }
-            }
-        });
+       //
     }
 })
-
-function apply_restrictions(frm, le_map){
-    le_map = JSON.parse(le_map);
-    map_keys = Object.keys(le_map);
-
-    if (map_keys) {
-        for (var i=0; i<map_keys.length; i++) {
-            if(cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Table"){
-                $.each(le_map[map_keys[i]], function(key, value) {
-                    var field_name = Object.keys(value)[0];
-                    cur_frm.set_query(field_name, map_keys[i], function() {
-                        return {
-                            filters: {
-                              "name" : value[field_name]
-                            }
-                        }
-                    });
-                });
-            } else if (cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Select") {
-                cur_frm.fields_dict[map_keys[i]].df.options = filter_value
-                refresh_field(map_keys[i]);
-            } else {
-                var filter_value = le_map[map_keys[i]];
-                cur_frm.set_query(map_keys[i], function() {
-                    return {
-                        filters: {
-                          "name" : filter_value
-                        }
-                    }
-                });
-            }
-        }
-    }
-}
 
 function add_freebie(abbr, freebie, income_account, expense_account, against_item_code) {
     var d = frappe.model.add_child(cur_frm.doc, "Sales Invoice Item", "items");

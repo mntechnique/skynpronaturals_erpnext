@@ -5,6 +5,18 @@ frappe.ui.form.on("Stock Entry", "onload", function(frm) {
 
 	//Haack!
 	//$('.form-in-grid').find('[data-fieldname="item_code"]').on("click", function(){ console.log("POPO") })
+
+	frappe.call({
+        method:"skynpronaturals_erpnext.api.get_user_field_restrictions",
+        args:{ doctype : cur_frm.doc.doctype },
+        callback: function(r){
+        	console.log("Restrictions", r);
+        	if (r.message) {
+            	apply_restrictions(cur_frm,r.message)
+        	}
+        }
+    });
+
 });
 
 
@@ -51,16 +63,6 @@ frappe.ui.form.on("Stock Entry", "refresh", function(frm) {
 	}
 	set_transit_warehouse_filter(frm);
     
-    frappe.call({
-        method:"skynpronaturals_erpnext.api.get_user_field_restrictions",
-        args:{ doctype : cur_frm.doc.doctype },
-        callback: function(r){
-        	console.log("Restrictions", r);
-        	if (r.message) {
-            	apply_restrictions(cur_frm,r.message)
-        	}
-        }
-    });
     
 });
 
@@ -235,41 +237,47 @@ function set_transit_warehouse_filter(frm) {
 	});
 }
 
-function apply_restrictions(frm, le_map){    
-    le_map = JSON.parse(le_map);   
-    map_keys = Object.keys(le_map);
-    console.log("LE Map", le_map);
+// function apply_restrictions(frm, le_map){    
+//     le_map = JSON.parse(le_map);   
+//     map_keys = Object.keys(le_map);
+//     console.log("LE Map", le_map);
 
-    if (map_keys) {
-        for (var i=0; i<map_keys.length; i++) {
-            if(cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Table"){
-                $.each(le_map[map_keys[i]], function(key, value) {
-                	console.log("lemap mapkeys i:", le_map[map_keys[i]]);
-                    var field_name = Object.keys(value)[0];
-      				console.log("Field: ", field_name, " Value: ", value);
-                    cur_frm.set_query(field_name, map_keys[i], function() {
-						console.log("Table field", value[field_name]);
-                        return {
-                            filters: {
-                              "name" : value[field_name]
-                            }
-                        }
-                    });
-                });
-            } else if (cur_frm.fields_dict[map_keys[i]].df.fieldtype == "Select") {
-                cur_frm.fields_dict[map_keys[i]].df.options = le_map[map_keys[i]].join("\n");
-                refresh_field(map_keys[i]);
-            } else {
-                var filter_value = le_map[map_keys[i]];
-                cur_frm.set_query(map_keys[i], function() {
-                	console.log("Normal field", filter_value);
-                	return {
-                        filters: {
-                          "name" : filter_value
-                        }
-                    }
-                });
-            }
-        }
-    }
-}
+//     console.log("Map Keys", map_keys);
+
+//     get_query_dict = {};
+
+//     if (map_keys) {
+//         for (var i=0; i<map_keys.length; i++) {
+//             if(frm.fields_dict[map_keys[i]].df.fieldtype == "Table"){
+//                 $.each(le_map[map_keys[i]], function(key, value) {
+                	
+//                     var field_name = Object.keys(value)[0];
+      				
+//                     frm.set_query(field_name, map_keys[i], function() {
+//                     	console.log("TableFieldName: ", field_name, " Fieldname: ", map_keys[i], " Value: ", value[field_name]);
+//                         return {
+//                             filters: {
+//                               "name" : value[field_name]
+//                             }
+//                         }
+//                     });
+//                 });
+//             } else if (frm.fields_dict[map_keys[i]].df.fieldtype == "Select") {
+//                 frm.fields_dict[map_keys[i]].df.options = le_map[map_keys[i]].join("\n");
+//                 refresh_field(map_keys[i]);
+//             } else {
+//                 var filter_value = le_map[map_keys[i]];
+                
+//                 console.log("NormalFieldname: ", map_keys[i], " Value: ", filter_value);
+
+//                 frm.set_query(map_keys[i], function() {
+//                 	return {
+//                  		filters: {
+//                             "name" : filter_value
+//                         }
+//                  	}
+//                 });
+//             }
+//         }
+//     }
+// }
